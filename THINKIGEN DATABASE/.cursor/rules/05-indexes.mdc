@@ -1,0 +1,31 @@
+---
+description: Thinkigen index rules
+globs: ["database/indexes/**/*", "database/**/*.sql"]
+alwaysApply: true
+---
+
+# INDEX RULES
+
+Indexes are designed from actual workload.
+
+Before adding an index:
+1. identify query;
+2. identify predicates;
+3. identify joins;
+4. identify ordering/grouping;
+5. inspect existing indexes;
+6. evaluate cardinality;
+7. estimate write cost;
+8. validate with execution plan when material.
+
+NEVER:
+- index every column;
+- add duplicate indexes;
+- create giant hierarchy indexes blindly;
+- create indexes solely because a tool suggested them;
+- add INCLUDE columns without covering evidence.
+
+Review indexes for:
+School, Academic Year, Branch, Class, Section, Student, Teacher assignment, Attendance, Marks, Timetable, Fees and Receipts.
+
+Performance optimization must never weaken correctness or authorization.

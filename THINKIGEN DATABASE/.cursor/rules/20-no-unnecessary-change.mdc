@@ -1,0 +1,25 @@
+---
+description: Prevent unnecessary Thinkigen database changes
+globs: ["database/**/*"]
+alwaysApply: true
+---
+
+# MINIMAL CHANGE RULE
+
+The safest database change is the smallest change that fully satisfies the approved requirement.
+
+Do not:
+- refactor unrelated code;
+- rename for style;
+- normalize/denormalize without requirement;
+- add indexes just because they might help;
+- add audit fields everywhere;
+- add status columns when the business rule does not require them;
+- add capacity columns;
+- add generic tenant IDs;
+- add duplicate master data;
+- change a datatype without evidence;
+- add "future-proof" tables;
+- add speculative triggers.
+
+If an optional improvement is valuable, report it as a recommendation instead of implementing it.

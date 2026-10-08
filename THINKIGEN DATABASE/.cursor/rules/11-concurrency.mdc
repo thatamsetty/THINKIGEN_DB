@@ -1,0 +1,22 @@
+---
+description: Thinkigen rowversion concurrency rules
+globs: ["database/**/*.sql"]
+alwaysApply: true
+---
+
+# CONCURRENCY
+
+Use SQL Server rowversion on important mutable transactional/configuration tables where lost updates are a real risk.
+
+Good candidates:
+- Student;
+- User/Role configuration;
+- Attendance;
+- Marks/Grades;
+- Timetable;
+- Fee/Payment;
+- important mutable academic configuration.
+
+Do not add rowversion to every static table.
+
+Concurrent updates must not silently overwrite newer data.

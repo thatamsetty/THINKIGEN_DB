@@ -1,0 +1,5 @@
+﻿branch_id,school_id,branch_code,branch_name,is_active,created_at,created_by,updated_at,updated_by,row_version
+1,1,BR-01,Central Campus,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000002859
+2,1,BR-02,North Campus,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000285A
+3,2,BR-01,City Campus,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000285B
+4,2,BR-02,Lake Campus,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000285C

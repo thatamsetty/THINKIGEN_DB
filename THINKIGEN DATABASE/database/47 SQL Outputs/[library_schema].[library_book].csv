@@ -1,0 +1,25 @@
+﻿book_id,school_id,branch_id,title,author,subject,category,language,edition,isbn,description,total_copies,is_active,created_at,created_by,updated_at,updated_by,row_version
+1,1,1,English Grammar Essentials,R. Sharma,English,Academic,English,3rd,9781000000001,Grammar and writing reference for Classes 8 and 9.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003661
+2,1,1,English Literature Reader,M. Thomas,English,Literature,English,2nd,9781000000002,"Prose, poetry and comprehension selections.",2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003662
+3,1,1,Mathematics Foundations,A. Rao,Mathematics,Academic,English,4th,9781000000003,"Algebra, geometry and number systems.",2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003663
+4,1,1,Algebra and Geometry,S. Gupta,Mathematics,Academic,English,3rd,9781000000004,Practice reference for secondary mathematics.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003664
+5,1,1,General Science Explorer,M. Iyer,Science,Academic,English,4th,9781000000005,"Physics, chemistry and biology foundations.",2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003665
+6,1,1,Social Science Atlas,K. Menon,Social Science,Reference,English,2nd,9781000000006,"History, geography and civics reference.",2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003666
+7,1,2,Computer Science Basics,P. Nair,Computer Science,Academic,English,2nd,9781000000007,Programming and digital literacy basics.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003667
+8,1,2,English Grammar Essentials II,R. Sharma,English,Academic,English,3rd,9781000000008,Advanced grammar exercises.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003668
+9,1,2,Mathematics Problem Solving,A. Rao,Mathematics,Academic,English,2nd,9781000000009,Problem-solving practice.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003669
+10,1,2,Science Experiments,M. Iyer,Science,Laboratory,English,1st,9781000000010,School-level science experiments.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000366A
+11,1,2,Indian History and Civics,V. Singh,Social Science,Academic,English,3rd,9781000000011,Indian history and civics reference.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000366B
+12,1,2,School Computing Projects,P. Nair,Computer Science,Projects,English,1st,9781000000012,Hands-on computing projects.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000366C
+13,2,3,English Reader,P. Rao,English,Literature,English,1st,9781000000013,Reading and comprehension.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000366D
+14,2,3,Grammar and Composition,N. Das,English,Academic,English,2nd,9781000000014,Composition and language skills.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000366E
+15,2,3,Algebra for Class 9,S. Gupta,Mathematics,Academic,English,3rd,9781000000015,Algebra reference.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x000000000000366F
+16,2,3,Geometry Practice,A. Rao,Mathematics,Academic,English,2nd,9781000000016,Geometry exercises.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003670
+17,2,3,Physics and Life Science,N. Reddy,Science,Academic,English,2nd,9781000000017,Integrated science reference.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003671
+18,2,3,Geography and Environment,K. Menon,Social Science,Reference,English,1st,9781000000018,Geography and environmental studies.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003672
+19,2,4,Indian Civics,V. Singh,Social Science,Academic,English,1st,9781000000019,Civics and governance reference.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003673
+20,2,4,Computer Science Projects,P. Nair,Computer Science,Projects,English,2nd,9781000000020,Programming and project reference.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003674
+21,2,4,Science Lab Manual,N. Reddy,Science,Laboratory,English,3rd,9781000000021,Laboratory practical guide.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003675
+22,2,4,Mathematics Challenge Book,S. Gupta,Mathematics,Academic,English,2nd,9781000000022,Advanced mathematics challenges.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003676
+23,2,4,English Creative Writing,N. Das,English,Literature,English,1st,9781000000023,Creative writing exercises.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003677
+24,2,4,World History Reference,V. Singh,Social Science,Reference,English,2nd,9781000000024,World history reference.,2,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x0000000000003678

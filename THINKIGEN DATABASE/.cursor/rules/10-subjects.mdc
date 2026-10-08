@@ -1,0 +1,27 @@
+---
+description: Thinkigen subject architecture
+globs: ["database/**/*.sql", "database/schema/**/*"]
+alwaysApply: true
+---
+
+# SUBJECT RULES
+
+Subject is Organization-level master data.
+
+When a school creates a genuinely new subject:
+- it becomes an Organization subject master;
+- other schools can use it if needed.
+
+Existing subjects are reused.
+
+School-level enablement is controlled through SchoolSubject.
+
+Class-level assignment is controlled through ClassSubject.
+
+Do not create:
+Mathematics-SchoolA,
+Mathematics-SchoolB,
+Mathematics-Class6,
+etc.
+
+Use one approved Mathematics master with mappings.

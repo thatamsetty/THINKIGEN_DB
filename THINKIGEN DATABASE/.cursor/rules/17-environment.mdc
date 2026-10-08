@@ -1,0 +1,20 @@
+---
+description: Thinkigen environment promotion rules
+globs: ["database/migrations/**/*", "database/operations/**/*", "database/**/*.md"]
+alwaysApply: true
+---
+
+# ENVIRONMENT PROMOTION
+
+Local → Dev → Test → Staging → Production.
+
+Same logical schema.
+
+Environment-specific:
+- secrets;
+- connection settings;
+- operational configuration.
+
+Production access is restricted.
+
+Never test destructive migrations first in production.

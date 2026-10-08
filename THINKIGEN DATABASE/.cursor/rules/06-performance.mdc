@@ -1,0 +1,34 @@
+---
+description: Thinkigen SQL performance rules
+globs: ["database/queries/**/*", "database/performance/**/*", "database/**/*.sql"]
+alwaysApply: true
+---
+
+# PERFORMANCE RULES
+
+Use:
+- SARGable predicates;
+- parameterized SQL;
+- explicit joins;
+- explicit column lists;
+- set-based operations;
+- appropriate pagination.
+
+Avoid:
+- SELECT *;
+- implicit conversions;
+- accidental Cartesian joins;
+- unbounded result sets;
+- N+1 patterns;
+- unnecessary DISTINCT;
+- unnecessary long transactions;
+- NOLOCK as a generic fix.
+
+Evidence required for important optimization:
+- actual execution plan;
+- CPU;
+- logical reads;
+- duration;
+- representative row counts.
+
+Never trade correctness/security for speed.

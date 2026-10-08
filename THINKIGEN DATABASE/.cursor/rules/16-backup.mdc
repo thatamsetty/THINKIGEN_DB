@@ -1,0 +1,24 @@
+---
+description: Thinkigen backup and recovery rules
+globs: ["database/operations/**/*", "database/**/*.md"]
+alwaysApply: true
+---
+
+# BACKUP / RECOVERY
+
+Production backup is mandatory.
+
+Required:
+- approved RPO/RTO;
+- protected backups;
+- appropriate encryption;
+- restricted access;
+- monitoring;
+- failure alerts;
+- retention;
+- restore tests;
+- recovery runbooks.
+
+Do not invent RPO/RTO values.
+
+A successful backup is not enough. Restore testing is required to establish recoverability.

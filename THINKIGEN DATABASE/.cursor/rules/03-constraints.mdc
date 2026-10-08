@@ -1,0 +1,27 @@
+---
+description: Thinkigen constraint and data integrity rules
+globs: ["database/**/*.sql"]
+alwaysApply: true
+---
+
+# CONSTRAINT RULES
+
+Database constraints must enforce invariants that must always be true.
+
+Use:
+- PK for identity;
+- FK for relationships;
+- UNIQUE for business uniqueness;
+- CHECK for finite/domain-valid values;
+- NOT NULL for required data.
+
+Do not rely solely on UI validation.
+
+Do not add a constraint that contradicts an approved business rule.
+
+Before changing a constraint:
+- inspect existing data;
+- identify violations;
+- define remediation;
+- assess production impact;
+- migrate safely.

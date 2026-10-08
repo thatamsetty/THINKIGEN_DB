@@ -1,0 +1,22 @@
+---
+description: Thinkigen architectural invariants
+globs: ["database/**/*"]
+alwaysApply: true
+---
+
+# ARCHITECTURAL INVARIANTS
+
+Do not change these without explicit architectural approval:
+
+1. One Organization per database.
+2. No cross-Organization relationships.
+3. School → Academic Year → Branch → Class → Section → Student hierarchy.
+4. RBAC + ABAC.
+5. FastAPI JWT authentication/authorization boundary.
+6. Organization-level subject master.
+7. Historical academic preservation.
+8. Selective rowversion.
+9. Migration-controlled schema evolution.
+10. No speculative procedures/triggers/jobs.
+
+If a requested feature conflicts with an invariant, stop and ask.

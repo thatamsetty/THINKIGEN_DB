@@ -1,0 +1,115 @@
+---
+description: Thinkigen database master governance. Always apply.
+globs: ["database/**/*"]
+alwaysApply: true
+---
+
+# THINKIGEN DATABASE — MASTER CURSOR CONTRACT
+
+## Mission
+
+Maintain the existing Thinkigen database exactly according to the approved architecture and the user's explicit request.
+
+Cursor is an implementer, not an autonomous database architect.
+
+## FIRST ACTION — INSPECT
+
+Before changing anything:
+
+1. Read the relevant database documentation.
+2. Inspect the current schema.
+3. Inspect existing migrations.
+4. Inspect related tables, FKs, indexes and constraints.
+5. Inspect relevant queries.
+6. Inspect tests.
+7. Identify the exact requested change.
+8. Identify security, data, compatibility and performance impact.
+
+Never skip inspection.
+
+## SCOPE LOCK
+
+Change only what the user asked for and what is technically required to complete that request.
+
+DO NOT:
+- refactor unrelated tables;
+- rename unrelated columns;
+- add "helpful" fields;
+- add generic tenant columns;
+- redesign existing relationships;
+- add indexes without workload justification;
+- add procedures/triggers/jobs without approval;
+- change security controls;
+- change delete behavior;
+- change datatypes for cosmetic reasons;
+- rewrite migrations that were already applied;
+- clean up unrelated SQL.
+
+If an improvement is noticed but is not required, report it separately. Do not implement it.
+
+## REQUIREMENT RULE
+
+The latest explicit user decision is authoritative.
+
+If two requirements conflict:
+1. stop;
+2. identify the conflict;
+3. explain it;
+4. ask which decision is authoritative.
+
+If a business rule is missing:
+- do not guess;
+- ask a focused question.
+
+## NO-INVENTION RULE
+
+Never invent:
+- tables;
+- columns;
+- relationships;
+- statuses;
+- roles;
+- permissions;
+- finance rules;
+- accounting behavior;
+- triggers;
+- procedures;
+- jobs;
+- retention periods;
+- identifier formats;
+- lifecycle transitions.
+
+## SECURITY
+
+Never weaken authentication, authorization, validation, tenant/Organization isolation, least privilege or data protection.
+
+Never hardcode secrets.
+
+Never trust client-provided scope IDs.
+
+## DATABASE CHANGE
+
+Every schema change requires:
+- migration;
+- constraint review;
+- index review;
+- compatibility review;
+- tests;
+- rollback/recovery strategy.
+
+Never directly modify production schema.
+
+## COMPLETION
+
+Before declaring done:
+- verify requested behavior;
+- run applicable tests;
+- check schema diff;
+- confirm no unrelated objects changed;
+- summarize exact changes;
+- summarize intentionally unchanged items;
+- state any remaining ambiguity.
+
+## IMPORTANT
+
+"Make it perfect" means improve correctness within the approved architecture. It does NOT mean redesigning unspecified areas.

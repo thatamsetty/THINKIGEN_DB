@@ -1,0 +1,21 @@
+---
+description: Thinkigen SQL query safety
+globs: ["database/queries/**/*.sql", "database/**/*.sql"]
+alwaysApply: true
+---
+
+# QUERY SAFETY
+
+All untrusted values must be parameterized.
+
+Never build SQL by concatenating user input.
+
+Queries must:
+- explicitly select columns;
+- explicitly join;
+- enforce scope;
+- use appropriate predicates;
+- avoid accidental data expansion.
+
+Before modifying a query, inspect existing callers and expected result shape.
+Do not change result columns casually because backend contracts may depend on them.

@@ -1,0 +1,27 @@
+---
+description: Thinkigen lifecycle and historical preservation
+globs: ["database/**/*.sql"]
+alwaysApply: true
+---
+
+# LIFECYCLE RULES
+
+Student academic history is permanent unless an explicit approved retention rule says otherwise.
+
+Promotion:
+- explicit authorized action;
+- after academic year completion;
+- never automatic without approval.
+
+Section/branch/school transfer:
+- preserve previous placement;
+- create the new approved placement;
+- never overwrite history.
+
+One active academic placement at a time under the approved model.
+
+Highest-class completion:
+- no invented next class/section;
+- do not create fake promotion rows.
+
+Inactive does not mean historical deletion.

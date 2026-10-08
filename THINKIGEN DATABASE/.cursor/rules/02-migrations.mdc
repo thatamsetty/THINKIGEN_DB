@@ -1,0 +1,33 @@
+---
+description: Thinkigen migration rules
+globs: ["database/migrations/**/*.sql"]
+alwaysApply: true
+---
+
+# MIGRATION RULES
+
+Every schema modification MUST be a versioned migration.
+
+NEVER:
+- directly modify production;
+- edit an applied migration;
+- silently drop data;
+- silently rename data-bearing columns/tables;
+- bypass migration testing.
+
+Before writing:
+- inspect current schema;
+- inspect migration history;
+- inspect dependencies;
+- inspect production-data impact;
+- assess backward compatibility;
+- assess API compatibility;
+- assess index impact;
+- define rollback/recovery.
+
+Prefer backward-compatible changes.
+
+Promote:
+Local → Dev → Test → Staging → Production.
+
+A failed migration blocks promotion.

@@ -1,0 +1,27 @@
+---
+description: Force clarification for undefined financial behavior
+globs: ["database/**/*.sql", "database/finance/**/*"]
+alwaysApply: true
+---
+
+# FINANCE CLARIFICATION GATE
+
+The supplied finance baseline is not a complete accounting specification.
+
+If a requested change introduces behavior not already specified, ask before implementation.
+
+Examples requiring clarification:
+- ledger/journal design;
+- tax/GST;
+- discounts beyond scholarship;
+- refunds approval workflow;
+- write-offs;
+- installments beyond approved terms;
+- payroll;
+- reconciliation;
+- financial periods;
+- currencies;
+- accounting entries;
+- settlement rules.
+
+Do not fill gaps with assumptions.

@@ -1,0 +1,22 @@
+---
+description: Thinkigen sensitive data rules
+globs: ["database/security/**/*", "database/**/*.sql"]
+alwaysApply: true
+---
+
+# DATA PROTECTION
+
+Treat student, guardian, teacher/employee, academic and financial information as sensitive.
+
+Rules:
+- collect only approved fields;
+- restrict by authorization scope;
+- protect exports;
+- minimize logs;
+- never log secrets;
+- protect lower environments from production PII;
+- preserve required history.
+
+Guardian records can serve multiple students.
+
+Never delete guardian history merely because a student leaves.
