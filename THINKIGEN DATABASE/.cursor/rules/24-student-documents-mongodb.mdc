@@ -1,0 +1,24 @@
+# STUDENT DOCUMENTS — MONGODB BOUNDARY
+
+Student document files and document metadata are **not** stored in SQL Server.
+
+## Approved storage model
+
+- **SQL Server** — student identity, guardians, academic placement on `student_schema.student`
+- **MongoDB** — student document metadata (document type, verification status, file metadata, blob reference)
+- **Blob Storage** — physical document files (referenced by `blob_id` from MongoDB)
+
+## Rules
+
+- Do **not** create `student_schema.student_document` or equivalent SQL tables for student documents.
+- Do **not** store document binaries in SQL Server.
+- SQL `student_id` may be referenced from MongoDB as the business key linking documents to a student.
+- Announcement attachments: MongoDB + Blob Storage only. No `management_schema.announcement_attachment` or `blob_id` on SQL announcement rows.
+- Assignment attachment/document metadata follows the same MongoDB + Blob Storage pattern; SQL stores only `teachers_schema.assignment` business data.
+
+## When a change is requested
+
+If a feature needs student document storage:
+1. confirm MongoDB collection schema with the user;
+2. confirm Blob Storage contract;
+3. keep SQL changes limited to student master keys only if a new FK reference is required.

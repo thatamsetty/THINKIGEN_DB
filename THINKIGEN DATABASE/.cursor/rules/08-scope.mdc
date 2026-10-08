@@ -1,0 +1,23 @@
+---
+description: Thinkigen RBAC and ABAC resource scope
+globs: ["database/**/*.sql", "database/security/**/*"]
+alwaysApply: true
+---
+
+# ACCESS SCOPE
+
+RBAC = what the user may do.
+ABAC = which resource they may do it to.
+
+Examples:
+Principal → permitted school only.
+School Admin → permitted school only.
+Correspondent → permitted school only.
+Teacher → assigned branch/class/section/subject only.
+Management/Director → explicitly permitted schools only.
+Transport Manager → permitted school/transport scope.
+Student → own authorized data only.
+
+Never authorize because an ID exists.
+
+A valid Student ID from another school is still unauthorized.

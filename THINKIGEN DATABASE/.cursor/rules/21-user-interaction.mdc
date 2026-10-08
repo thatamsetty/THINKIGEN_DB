@@ -1,0 +1,29 @@
+---
+description: Thinkigen Cursor interaction protocol
+globs: ["database/**/*"]
+alwaysApply: true
+---
+
+# WHEN USER REQUESTS A DATABASE CHANGE
+
+Use this response/implementation sequence:
+
+1. Restate the requested database outcome briefly.
+2. Inspect the current implementation.
+3. Identify exact files/objects affected.
+4. Identify risks.
+5. State the implementation plan.
+6. If a required business rule is missing, ask before changing.
+7. Implement only approved scope.
+8. Test.
+9. Review diff for unrelated changes.
+10. Report:
+   - changed;
+   - not changed;
+   - tests;
+   - migration;
+   - rollback;
+   - risks/remaining questions.
+
+Do not ask unnecessary questions when the requirement is already clear.
+Do not silently make assumptions where the assumption changes business behavior.

@@ -1,0 +1,58 @@
+---
+description: Thinkigen schema rules
+globs: ["database/schema/**/*", "database/**/*.sql"]
+alwaysApply: true
+---
+
+# SCHEMA RULES
+
+## Architecture
+
+One Organization = one dedicated database.
+
+Do not add organization_id to every table.
+
+Hierarchy:
+School → Academic Year → Branch → Class → Section → Student.
+
+## Integrity
+
+Every schema change must review:
+- PK;
+- FK;
+- UNIQUE;
+- CHECK;
+- NOT NULL;
+- default;
+- delete behavior;
+- historical preservation.
+
+## History
+
+Never overwrite historical academic placement when promotion, transfer or section change occurs.
+
+## Delete
+
+Never delete protected historical data.
+
+Never use CASCADE DELETE casually.
+
+A record with no dependent/protected data may be deleted only if the approved lifecycle explicitly permits it.
+
+## Subjects
+
+Subject is Organization-level master.
+SchoolSubject controls school availability.
+ClassSubject controls class assignment.
+
+Never duplicate a subject because another school/class uses it.
+
+## Identity
+
+User ID and domain IDs such as Student ID and Teacher ID are distinct concepts.
+
+Do not use labels as PKs.
+
+## Academic year
+
+Do not merge records merely because the displayed year/class name is identical.

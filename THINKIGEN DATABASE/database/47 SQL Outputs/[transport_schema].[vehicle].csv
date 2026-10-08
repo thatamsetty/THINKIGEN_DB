@@ -1,0 +1,5 @@
+﻿vehicle_id,school_id,branch_id,vehicle_number,vehicle_name,capacity,status,is_active,created_at,created_by,updated_at,updated_by,row_version
+1,1,1,TG-01-AB-1001,Central Campus Bus,40,ACTIVE,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x00000000000036F9
+2,1,2,TG-01-AB-1002,North Campus Bus,40,ACTIVE,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x00000000000036FA
+3,2,3,TG-02-AB-2001,City Campus Bus,40,ACTIVE,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x00000000000036FB
+4,2,4,TG-02-AB-2002,Lake Campus Bus,40,ACTIVE,1,2026-09-01 10:59:33,1,2026-09-01 10:59:33,NULL,0x00000000000036FC

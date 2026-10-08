@@ -1,0 +1,31 @@
+---
+description: Thinkigen datatype rules
+globs: ["database/**/*.sql"]
+alwaysApply: true
+---
+
+# DATATYPE RULES
+
+Use the smallest safe datatype.
+
+Money:
+- DECIMAL with approved precision/scale.
+- Never FLOAT/REAL for exact financial values.
+
+Boolean:
+- BIT.
+
+Time:
+- use the approved SQL Server temporal type consistently.
+
+Text:
+- choose controlled VARCHAR/NVARCHAR length.
+- do not use MAX without a real requirement.
+
+IDs:
+- use the approved key datatype consistently.
+
+rowversion:
+- only on important mutable tables where concurrency protection is required.
+
+Never change a datatype merely for style.

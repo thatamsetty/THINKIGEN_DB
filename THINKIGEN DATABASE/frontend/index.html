@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thinkigen ERP — Daily Timetable & Period Topics ("My Day")</title>
+  <meta name="description" content="Production view of Thinkigen Academic Timetable with daily period lesson topic (subject_topic) for Students, Parents, and Teachers.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top App Navigation & Controls Bar -->
+  <header class="header-container">
+    <div class="header-content">
+      <div class="brand-wrapper">
+        <div class="brand-icon">T</div>
+        <div class="brand-meta">
+          <h1>THINKIGEN ERP</h1>
+          <p>Academic Schedule & Intelligence Platform</p>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <!-- Role Switcher -->
+        <div class="pill-group" role="tablist" aria-label="Role View Selector">
+          <button id="tab-student" class="pill-btn active" role="tab" aria-selected="true">
+            <span>🎓</span> Student / Parent
+          </button>
+          <button id="tab-teacher" class="pill-btn" role="tab" aria-selected="false">
+            <span>👨‍🏫</span> Teacher Workload
+          </button>
+        </div>
+
+        <!-- Viewport Switcher -->
+        <div class="pill-group" role="group" aria-label="Device Viewport Selector">
+          <button id="btn-desktop-view" class="pill-btn active">
+            <span>💻</span> Desktop
+          </button>
+          <button id="btn-mobile-view" class="pill-btn">
+            <span>📱</span> Mobile View
+          </button>
+        </div>
+
+        <!-- Live Clock -->
+        <div class="live-ist-badge">
+          <span class="live-pulse"></span>
+          <span id="ist-time-display">--:--:-- IST</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport -->
+  <main class="main-viewport">
+    <div id="viewport-wrapper" class="viewport-frame">
+
+      <!-- Profile Banner Card -->
+      <section id="profile-banner" class="profile-banner" aria-label="User Profile & Daily Status">
+        <!-- Rendered dynamically by app.js -->
+      </section>
+
+      <!-- Timetable Periods Section -->
+      <section class="schedule-section">
+        <div class="schedule-section-header">
+          <h3 id="section-heading"><span>📅</span> Today's Class Schedule & Daily Lesson Topics</h3>
+        </div>
+
+        <!-- Timeline / Card List -->
+        <div id="timeline-list" class="timeline-container" role="feed" aria-label="Daily Timetable Periods">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Teacher Inline Edit Topic Modal -->
+  <div id="edit-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div>
+          <h3 id="modal-title">Update Lesson Topic (subject_topic)</h3>
+          <p id="modal-subtitle">Subject • Class • Period</p>
+        </div>
+        <button id="btn-close-modal" class="btn-close" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">
+          <label for="edit-topic-input">Planned Lesson Topic for Today</label>
+          <span id="char-count" class="char-counter">0/200</span>
+        </div>
+        <input 
+          type="text" 
+          id="edit-topic-input" 
+          class="form-input" 
+          maxlength="200" 
+          placeholder="e.g. Algebra Ex 3.1, Plant Cell Biology..." 
+          autocomplete="off"
+        >
+      </div>
+
+      <!-- Quick Preset Suggestions -->
+      <div class="preset-topics">
+        <div class="preset-label">Quick Suggestions:</div>
+        <div id="presets-container" class="chips-container">
+          <!-- Populated by app.js -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="btn-cancel-topic" class="btn-outline">Cancel</button>
+        <button type="button" id="btn-save-topic" class="btn-primary">
+          <span>💾</span> Save Today's Topic
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

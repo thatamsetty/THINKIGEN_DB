@@ -1,0 +1,33 @@
+---
+description: Thinkigen current finance baseline only
+globs: ["database/**/*.sql", "database/finance/**/*"]
+alwaysApply: true
+---
+
+# FINANCE — DO NOT INVENT RULES
+
+Approved baseline:
+
+Scope:
+Organization → School → Branch → Academic Year → Class → Section → Student.
+
+Term-wise:
+Tuition, Hostel, Transport → Term 1/2/3.
+
+Single amount + due date:
+Exam, Sports, Lab, Library, Books, Admission, Other.
+
+Scholarship reduces net amount.
+
+Status:
+DUE, PARTIAL, PAID.
+
+Payments/refunds:
+receipt transactions linked to the applicable fee record.
+
+Transport assignment belongs to Transport; Finance stores amount only.
+
+DO NOT invent:
+ledger rules, tax, payroll, accounting periods, reconciliation, refund approvals, journal entries, revenue recognition, currencies, or other finance behavior.
+
+If the user asks for any of these before specification: ASK.

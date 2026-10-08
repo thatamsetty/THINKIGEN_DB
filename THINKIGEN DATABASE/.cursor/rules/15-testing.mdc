@@ -1,0 +1,31 @@
+---
+description: Thinkigen database testing rules
+globs: ["database/tests/**/*", "database/**/*.sql"]
+alwaysApply: true
+---
+
+# TESTING
+
+Every database change requires appropriate tests.
+
+Validate:
+- migration;
+- rollback/recovery where applicable;
+- PK/FK;
+- UNIQUE;
+- CHECK;
+- NOT NULL;
+- delete behavior;
+- history;
+- duplicate prevention;
+- security scope;
+- representative queries;
+- concurrency;
+- API compatibility.
+
+Include negative tests for:
+- unauthorized IDs;
+- cross-school access;
+- invalid relationships;
+- duplicates;
+- malicious/untrusted input.

@@ -1,0 +1,30 @@
+---
+description: Thinkigen final database change gate
+globs: ["database/**/*"]
+alwaysApply: true
+---
+
+# FINAL GATE
+
+Before saying "done", confirm:
+
+[ ] I inspected existing implementation.
+[ ] I understood the exact requested change.
+[ ] I changed only required objects.
+[ ] I did not invent a business rule.
+[ ] I checked PK/FK/UNIQUE/CHECK.
+[ ] I checked datatypes/nullability.
+[ ] I checked delete/history impact.
+[ ] I checked security/scope.
+[ ] I checked index/performance impact.
+[ ] I checked FastAPI compatibility.
+[ ] I created a migration if schema changed.
+[ ] I did not edit an applied migration.
+[ ] I added/updated tests.
+[ ] I considered rollback/recovery.
+[ ] I did not hardcode secrets.
+[ ] I did not create procedures/triggers/jobs without approval.
+[ ] I can explain every changed line/object.
+
+If any answer is NO or UNKNOWN:
+STOP and resolve it before completion.

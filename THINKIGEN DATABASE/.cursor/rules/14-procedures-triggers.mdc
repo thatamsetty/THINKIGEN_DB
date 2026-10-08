@@ -1,0 +1,23 @@
+---
+description: Thinkigen database automation rules
+globs: ["database/**/*.sql"]
+alwaysApply: true
+---
+
+# PROCEDURES / TRIGGERS / JOBS
+
+Do not create stored procedures, triggers, scheduled jobs or hidden database automation unless:
+1. the user explicitly requests it, OR
+2. an approved architecture/business document requires it.
+
+If requested:
+- explain purpose;
+- identify affected objects;
+- assess transaction behavior;
+- assess recursion/reentrancy;
+- assess performance;
+- assess security;
+- add tests;
+- define rollback/recovery.
+
+Never introduce a trigger merely to compensate for missing application design.

@@ -1,0 +1,31 @@
+---
+description: Thinkigen security rules
+globs: ["database/security/**/*", "database/**/*.sql"]
+alwaysApply: true
+---
+
+# SECURITY RULES
+
+Security controls are non-negotiable.
+
+Authentication:
+JWT access/refresh token validation occurs in FastAPI.
+
+Authorization:
+RBAC + ABAC.
+
+Flow:
+JWT → FastAPI validation → authorization/scope → authorized DB operation.
+
+NEVER:
+- trust raw client scope IDs;
+- allow cross-Organization access;
+- grant unnecessary production privileges;
+- hardcode secrets;
+- concatenate untrusted SQL;
+- expose tokens/PII in logs;
+- treat UI restrictions as authorization.
+
+Fail closed.
+
+Use least privilege for application, migration and administrative accounts.
