@@ -148,7 +148,7 @@ BEGIN TRY
         src.priority_level,
         src.assigned_at,
         src.deadline_at,
-        src.target_status,
+        CASE WHEN CAST(src.deadline_at AS DATE) < CAST(GETUTCDATE() AS DATE) THEN N'CLOSED' ELSE src.target_status END AS status,
         src.estimated_minutes,
         src.published_at,
         1 AS is_active,
@@ -245,7 +245,11 @@ BEGIN TRY
                 ELSE N'Satisfactorily completed and verified.'
             END AS remarks
     ) calc
-    WHERE NOT EXISTS (
+    WHERE h.branch_id = 1
+      AND h.class_id = 1
+      AND h.section_id = 1
+      AND CAST(h.assigned_at AS DATE) <= DATEADD(DAY, -1, CAST(GETUTCDATE() AS DATE))
+      AND NOT EXISTS (
         SELECT 1
         FROM student_schema.homework_status existing
         WHERE existing.homework_id = h.homework_id

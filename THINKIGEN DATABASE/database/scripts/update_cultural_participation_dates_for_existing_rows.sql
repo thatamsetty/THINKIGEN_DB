@@ -40,7 +40,7 @@ BEGIN TRY
                 ELSE cp.participation_status 
             END,
             -- Ensure role_involvement is not null
-            cp.role_involvement = COALESCE(cp.role_involvement, N'PARTICIPANT'),
+            cp.role_involvement = COALESCE(cp.role_involvement, N'ORGANIZER'),
             -- Ensure result is not null
             cp.result = COALESCE(cp.result, N'PARTICIPATED'),
             cp.updated_at = SYSUTCDATETIME()

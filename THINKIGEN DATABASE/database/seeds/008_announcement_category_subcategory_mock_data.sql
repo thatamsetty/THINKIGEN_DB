@@ -716,7 +716,10 @@ BEGIN TRY
         s.start_date,
         s.end_date,
         s.publish_at,
-        s.status,
+        CASE 
+            WHEN ISNULL(s.end_date, s.start_date) < CAST(GETUTCDATE() AS DATE) THEN N'ARCHIVED'
+            ELSE s.status 
+        END AS status,
         1 AS is_active,
         s.publish_at AS created_at,
         CASE WHEN s.creator_type = N'ADMIN' THEN @AdminUserId1 ELSE @TeacherUserId1 END AS created_by,

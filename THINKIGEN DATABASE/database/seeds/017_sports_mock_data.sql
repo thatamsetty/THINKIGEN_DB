@@ -1,4 +1,4 @@
-﻿/*
+/*
     Script:    017_sports_mock_data.sql
     Module:    025_sports_and_grievance_department / sports_schema.student_sport_history
     Purpose:   Self-contained, realistic mock data (60+ rows) for the Sports History module.
@@ -64,71 +64,91 @@ BEGIN TRY
 
     -- -------------------------------------------------------------------------
     -- 1. Defensive SPORTS Announcement Seeding
-    --    Seeds 4 sports event announcements if fewer than 3 SPORTS events exist.
+    --    Ensures all required SPORTS event announcements exist with descriptions based on titles.
     -- -------------------------------------------------------------------------
-    IF (SELECT COUNT(*) FROM management_schema.announcement
-        WHERE announcement_type = N'EVENT' AND sub_category = N'SPORTS') < 3
-    BEGIN
-        PRINT N'Seeding defensive sports event announcements...';
+    DECLARE @admin_user_id BIGINT;
+    SELECT TOP 1 @admin_user_id = user_id
+    FROM security_schema.users
+    WHERE user_type IN (N'ADMIN', N'PRINCIPAL')
+    ORDER BY user_id;
 
-        DECLARE @admin_user_id BIGINT;
-        SELECT TOP 1 @admin_user_id = user_id
-        FROM security_schema.users
-        WHERE user_type IN (N'ADMIN', N'PRINCIPAL')
-        ORDER BY user_id;
+    DECLARE @school_id_ann  BIGINT;
+    DECLARE @branch_id_ann  BIGINT;
+    DECLARE @acyr_id_ann    BIGINT;
 
-        DECLARE @school_id_ann  BIGINT;
-        DECLARE @branch_id_ann  BIGINT;
-        DECLARE @acyr_id_ann    BIGINT;
+    SELECT TOP 1
+        @school_id_ann = b.school_id,
+        @branch_id_ann = b.branch_id,
+        @acyr_id_ann   = ay.academic_year_id
+    FROM management_schema.branch b
+    INNER JOIN management_schema.academic_year ay
+        ON ay.school_id = b.school_id AND ay.is_current = 1
+    WHERE b.is_active = 1
+    ORDER BY b.school_id, b.branch_id;
 
-        SELECT TOP 1
-            @school_id_ann = b.school_id,
-            @branch_id_ann = b.branch_id,
-            @acyr_id_ann   = ay.academic_year_id
-        FROM management_schema.branch b
-        INNER JOIN management_schema.academic_year ay
-            ON ay.school_id = b.school_id AND ay.is_current = 1
-        WHERE b.is_active = 1
-        ORDER BY b.school_id, b.branch_id;
+    INSERT INTO management_schema.announcement
+        (school_id, branch_id, academic_year_id,
+         announcement_type, sub_category, title, description,
+         target_audience, registration_url,
+         start_date, end_date, publish_at, status, is_active,
+         created_by, updated_by)
+    SELECT
+        @school_id_ann, @branch_id_ann, @acyr_id_ann,
+        ev.announcement_type, ev.sub_category, ev.title, ev.description,
+        N'ALL', NULL,
+        ev.start_date, ev.end_date,
+        CAST(GETUTCDATE() AS DATETIME2(0)),
+        CASE WHEN ISNULL(ev.end_date, ev.start_date) < CAST(GETUTCDATE() AS DATE) THEN N'ARCHIVED' ELSE N'PUBLISHED' END,
+        CASE WHEN ISNULL(ev.end_date, ev.start_date) < CAST(GETUTCDATE() AS DATE) THEN 0 ELSE 1 END,
+        @admin_user_id, @admin_user_id
+    FROM (VALUES
+        (N'EVENT', N'SPORTS', N'Annual Inter-School Athletics Championship 2026',
+         N'Annual Inter-School Athletics Championship 2026 track and field competitions including sprint, relay, and jumping events.',
+         CAST('2026-08-15' AS DATE), CAST('2026-08-16' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Intra-School Cricket Tournament 2026',
+         N'Intra-School Cricket Tournament 2026 branch championship matches open to Class 6 to Class 10 students.',
+         CAST('2026-09-05' AS DATE), CAST('2026-09-07' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Kabaddi District Selection Trials 2026',
+         N'Kabaddi District Selection Trials 2026 for selecting school representative teams for district competitions.',
+         CAST('2026-09-20' AS DATE), CAST('2026-09-20' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Kho-Kho District Selection Trials 2026',
+         N'Kho-Kho District Selection Trials 2026 for evaluating agility and squad selection for district tournaments.',
+         CAST('2026-09-20' AS DATE), CAST('2026-09-20' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Basketball Inter-Section Friendly Match 2026',
+         N'Basketball Inter-Section Friendly Match 2026 inter-section friendly basketball matches across classes.',
+         CAST('2026-10-10' AS DATE), CAST('2026-10-10' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Volleyball Inter-Section Friendly Match 2026',
+         N'Volleyball Inter-Section Friendly Match 2026 inter-section friendly volleyball games across both campuses.',
+         CAST('2026-10-11' AS DATE), CAST('2026-10-11' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Badminton Practice Tournament 2026',
+         N'Badminton Practice Tournament 2026 school level badminton singles and doubles practice championship.',
+         CAST('2026-07-20' AS DATE), CAST('2026-07-20' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Table Tennis Intra-School Championship 2026',
+         N'Table Tennis Intra-School Championship 2026 indoor table tennis matches for students.',
+         CAST('2026-07-25' AS DATE), CAST('2026-07-25' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Chess Club Tournament 2026',
+         N'Chess Club Tournament 2026 school level chess tournament promoting strategic thinking.',
+         CAST('2026-08-05' AS DATE), CAST('2026-08-05' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Swimming Gala - Annual School Sports Day 2026',
+         N'Swimming Gala - Annual School Sports Day 2026 aquatic competitions and freestyle races.',
+         CAST('2026-08-10' AS DATE), CAST('2026-08-10' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Handball Intra-Section Match 2026',
+         N'Handball Intra-Section Match 2026 outdoor handball match series between section teams.',
+         CAST('2026-09-15' AS DATE), CAST('2026-09-15' AS DATE)),
+        (N'EVENT', N'SPORTS', N'Football Intra-School League Match 2026',
+         N'Football Intra-School League Match 2026 intra-school football league matches.',
+         CAST('2026-09-25' AS DATE), CAST('2026-09-25' AS DATE))
+    ) AS ev(announcement_type, sub_category, title, description, start_date, end_date)
+    WHERE NOT EXISTS (
+        SELECT 1 FROM management_schema.announcement a
+        WHERE a.title = ev.title
+    );
 
-        INSERT INTO management_schema.announcement
-            (school_id, branch_id, academic_year_id,
-             announcement_type, sub_category, title, description,
-             visible_to, registration_url,
-             start_date, end_date, published_at, status,
-             created_by, updated_by)
-        SELECT
-            @school_id_ann, @branch_id_ann, @acyr_id_ann,
-            ev.announcement_type, ev.sub_category, ev.title, ev.description,
-            N'ALL', NULL,
-            ev.start_date, ev.end_date,
-            CAST(GETUTCDATE() AS DATETIME2(0)),
-            N'PUBLISHED',
-            @admin_user_id, @admin_user_id
-        FROM (VALUES
-            (N'EVENT', N'SPORTS', N'Annual Inter-School Athletics Championship 2026',
-             N'Track and field events including 100m sprint, relay, long jump, shot put, and hurdles across all age groups.',
-             CAST('2026-08-15' AS DATE), CAST('2026-08-16' AS DATE)),
-            (N'EVENT', N'SPORTS', N'Intra-School Cricket Tournament 2026',
-             N'Branch vs Branch cricket championship. Open to Class 6 to Class 10 students.',
-             CAST('2026-09-05' AS DATE), CAST('2026-09-07' AS DATE)),
-            (N'EVENT', N'SPORTS', N'Kabaddi & Kho-Kho District Trials 2026',
-             N'Selection trials for district-level Kabaddi and Kho-Kho competitions. Coach-recommended students will be evaluated.',
-             CAST('2026-09-20' AS DATE), CAST('2026-09-20' AS DATE)),
-            (N'EVENT', N'SPORTS', N'Basketball & Volleyball Friendly Series 2026',
-             N'Friendly inter-section Basketball and Volleyball matches. All classes welcome to participate.',
-             CAST('2026-10-10' AS DATE), CAST('2026-10-11' AS DATE))
-        ) AS ev(announcement_type, sub_category, title, description, start_date, end_date)
-        WHERE NOT EXISTS (
-            SELECT 1 FROM management_schema.announcement a
-            WHERE a.title = ev.title
-        );
-
-        PRINT N'Sports announcements seeded (if not already present).';
-    END;
+    PRINT N'Sports announcements seeded / verified.';
 
     -- -------------------------------------------------------------------------
     -- 2. Build a temp catalog of sport events with their announcement IDs
+    --    activity_name strictly equals announcement.title; event_date equals start_date
     -- -------------------------------------------------------------------------
     IF OBJECT_ID(N'tempdb..#SportEvents') IS NOT NULL DROP TABLE #SportEvents;
     CREATE TABLE #SportEvents
@@ -137,57 +157,47 @@ BEGIN TRY
         sport_name       VARCHAR(100) NOT NULL,
         sport_category   VARCHAR(100) NOT NULL,
         activity_name    VARCHAR(200) NOT NULL,
-        announcement_id  BIGINT       NULL,
+        announcement_id  BIGINT       NOT NULL,
         event_date       DATE         NOT NULL
     );
 
-    -- Resolve announcement IDs dynamically for known titles
-    DECLARE @ann_athletics  BIGINT = NULL;
-    DECLARE @ann_cricket    BIGINT = NULL;
-    DECLARE @ann_kabaddi    BIGINT = NULL;
-    DECLARE @ann_bball      BIGINT = NULL;
-
-    SELECT @ann_athletics = announcement_id FROM management_schema.announcement
-    WHERE title = N'Annual Inter-School Athletics Championship 2026';
-
-    SELECT @ann_cricket = announcement_id FROM management_schema.announcement
-    WHERE title = N'Intra-School Cricket Tournament 2026';
-
-    SELECT @ann_kabaddi = announcement_id FROM management_schema.announcement
-    WHERE title = N'Kabaddi & Kho-Kho District Trials 2026';
-
-    SELECT @ann_bball = announcement_id FROM management_schema.announcement
-    WHERE title = N'Basketball & Volleyball Friendly Series 2026';
-
     -- Insert sport event catalog
+    -- activity_name strictly matches announcement.title, and announcement_id is mapped directly
     INSERT INTO #SportEvents (sport_name, sport_category, activity_name, announcement_id, event_date)
-    VALUES
+    SELECT
+        ev.sport_name,
+        ev.sport_category,
+        a.title AS activity_name,
+        a.announcement_id,
+        a.start_date AS event_date
+    FROM (VALUES
         -- Athletics (sport_event_id 1..6)
-        ('Athletics', 'TRACK_AND_FIELD', '100m Sprint - Annual Athletics Championship', @ann_athletics, '2026-08-15'),
-        ('Athletics', 'TRACK_AND_FIELD', '200m Sprint - Annual Athletics Championship', @ann_athletics, '2026-08-15'),
-        ('Athletics', 'TRACK_AND_FIELD', 'Long Jump - Annual Athletics Championship',   @ann_athletics, '2026-08-15'),
-        ('Athletics', 'TRACK_AND_FIELD', 'Shot Put - Annual Athletics Championship',    @ann_athletics, '2026-08-15'),
-        ('Athletics', 'TRACK_AND_FIELD', '4x100m Relay - Annual Athletics Championship',@ann_athletics, '2026-08-16'),
-        ('Athletics', 'TRACK_AND_FIELD', 'High Jump - Annual Athletics Championship',   @ann_athletics, '2026-08-16'),
+        (1, 'Athletics',   'TRACK_AND_FIELD', N'Annual Inter-School Athletics Championship 2026'),
+        (2, 'Athletics',   'TRACK_AND_FIELD', N'Annual Inter-School Athletics Championship 2026'),
+        (3, 'Athletics',   'TRACK_AND_FIELD', N'Annual Inter-School Athletics Championship 2026'),
+        (4, 'Athletics',   'TRACK_AND_FIELD', N'Annual Inter-School Athletics Championship 2026'),
+        (5, 'Athletics',   'TRACK_AND_FIELD', N'Annual Inter-School Athletics Championship 2026'),
+        (6, 'Athletics',   'TRACK_AND_FIELD', N'Annual Inter-School Athletics Championship 2026'),
         -- Cricket (sport_event_id 7..9)
-        ('Cricket',   'TEAM',            'Cricket Quarter-Final Match - Intra-School Tournament', @ann_cricket, '2026-09-05'),
-        ('Cricket',   'TEAM',            'Cricket Semi-Final Match - Intra-School Tournament',    @ann_cricket, '2026-09-06'),
-        ('Cricket',   'TEAM',            'Cricket Finals - Intra-School Tournament',              @ann_cricket, '2026-09-07'),
-        -- Kabaddi (sport_event_id 10)
-        ('Kabaddi',   'TEAM',            'Kabaddi District Selection Trials',    @ann_kabaddi, '2026-09-20'),
-        -- Kho-Kho (sport_event_id 11)
-        ('Kho-Kho',   'TEAM',            'Kho-Kho District Selection Trials',    @ann_kabaddi, '2026-09-20'),
-        -- Basketball (sport_event_id 12)
-        ('Basketball','TEAM',            'Basketball Inter-Section Friendly Match', @ann_bball, '2026-10-10'),
-        -- Volleyball (sport_event_id 13)
-        ('Volleyball','TEAM',            'Volleyball Inter-Section Friendly Match', @ann_bball, '2026-10-11'),
-        -- Individual / Indoor practice events (sport_event_id 14..19, no announcement)
-        ('Badminton',   'INDIVIDUAL',    'Badminton Practice Tournament - School Level',    NULL, '2026-07-20'),
-        ('Table Tennis','INDOOR',        'Table Tennis Intra-School Championship',           NULL, '2026-07-25'),
-        ('Chess',       'INDOOR',        'Chess Club Tournament - School Level',             NULL, '2026-08-05'),
-        ('Swimming',    'INDIVIDUAL',    'Swimming Gala - Annual School Sports Day',         NULL, '2026-08-10'),
-        ('Handball',    'OUTDOOR',       'Handball Intra-Section Match',                     NULL, '2026-09-15'),
-        ('Football',    'TEAM',          'Football Intra-School League Match',               NULL, '2026-09-25');
+        (7, 'Cricket',     'TEAM',            N'Intra-School Cricket Tournament 2026'),
+        (8, 'Cricket',     'TEAM',            N'Intra-School Cricket Tournament 2026'),
+        (9, 'Cricket',     'TEAM',            N'Intra-School Cricket Tournament 2026'),
+        -- Kabaddi & Kho-Kho (sport_event_id 10..11)
+        (10, 'Kabaddi',    'TEAM',            N'Kabaddi District Selection Trials 2026'),
+        (11, 'Kho-Kho',    'TEAM',            N'Kho-Kho District Selection Trials 2026'),
+        -- Basketball & Volleyball (sport_event_id 12..13)
+        (12, 'Basketball', 'TEAM',            N'Basketball Inter-Section Friendly Match 2026'),
+        (13, 'Volleyball', 'TEAM',            N'Volleyball Inter-Section Friendly Match 2026'),
+        -- Individual / Indoor practice events (sport_event_id 14..19)
+        (14, 'Badminton',   'INDOOR',         N'Badminton Practice Tournament 2026'),
+        (15, 'Table Tennis','INDOOR',         N'Table Tennis Intra-School Championship 2026'),
+        (16, 'Chess',       'INDOOR',         N'Chess Club Tournament 2026'),
+        (17, 'Swimming',    'INDIVIDUAL',     N'Swimming Gala - Annual School Sports Day 2026'),
+        (18, 'Handball',    'OUTDOOR',        N'Handball Intra-Section Match 2026'),
+        (19, 'Football',    'TEAM',           N'Football Intra-School League Match 2026')
+    ) AS ev(sort_order, sport_name, sport_category, ann_title)
+    INNER JOIN management_schema.announcement a ON a.title = ev.ann_title
+    ORDER BY ev.sort_order;
 
     -- -------------------------------------------------------------------------
     -- 3. Build candidate rows (students x sport events)
@@ -226,6 +236,7 @@ BEGIN TRY
         se.sport_event_id, se.sport_name, se.sport_category, se.activity_name,
         se.announcement_id, se.event_date,
         CASE
+            WHEN se.event_date > CAST(GETUTCDATE() AS DATE) THEN 'Registered'
             WHEN ROW_NUMBER() OVER (PARTITION BY se.sport_event_id ORDER BY s.student_id) = 1 THEN '1st Place'
             WHEN ROW_NUMBER() OVER (PARTITION BY se.sport_event_id ORDER BY s.student_id) = 2 THEN '2nd Place'
             WHEN ROW_NUMBER() OVER (PARTITION BY se.sport_event_id ORDER BY s.student_id) = 3 THEN '3rd Place'
@@ -253,7 +264,11 @@ BEGIN TRY
         s.student_id, s.school_id, s.branch_id, s.class_id, s.section_id,
         se.sport_event_id, se.sport_name, se.sport_category, se.activity_name,
         se.announcement_id, se.event_date,
-        CASE se.sport_event_id WHEN 9 THEN 'Winner' ELSE 'Team Member' END,
+        CASE 
+            WHEN se.event_date > CAST(GETUTCDATE() AS DATE) THEN 'Registered'
+            WHEN se.sport_event_id = 9 THEN 'Winner' 
+            ELSE 'Team Member' 
+        END,
         @sys_user
     FROM student_schema.student s
     CROSS JOIN #SportEvents se
@@ -280,6 +295,7 @@ BEGIN TRY
         se.sport_event_id, se.sport_name, se.sport_category, se.activity_name,
         se.announcement_id, se.event_date,
         CASE
+            WHEN se.event_date > CAST(GETUTCDATE() AS DATE) THEN 'Registered'
             WHEN ROW_NUMBER() OVER (PARTITION BY se.sport_event_id ORDER BY s.student_id) <= 2
                  THEN 'Selected for District'
             ELSE 'Participated - Not Selected'
@@ -305,7 +321,10 @@ BEGIN TRY
         s.student_id, s.school_id, s.branch_id, s.class_id, s.section_id,
         se.sport_event_id, se.sport_name, se.sport_category, se.activity_name,
         se.announcement_id, se.event_date,
-        'Participated',
+        CASE 
+            WHEN se.event_date > CAST(GETUTCDATE() AS DATE) THEN 'Registered'
+            ELSE 'Participated' 
+        END,
         @sys_user
     FROM student_schema.student s
     CROSS JOIN #SportEvents se
@@ -328,6 +347,7 @@ BEGIN TRY
         se.sport_event_id, se.sport_name, se.sport_category, se.activity_name,
         se.announcement_id, se.event_date,
         CASE
+            WHEN se.event_date > CAST(GETUTCDATE() AS DATE) THEN 'Registered'
             WHEN ROW_NUMBER() OVER (PARTITION BY se.sport_event_id ORDER BY s.student_id) = 1 THEN '1st Place'
             WHEN ROW_NUMBER() OVER (PARTITION BY se.sport_event_id ORDER BY s.student_id) = 2 THEN '2nd Place'
             WHEN ROW_NUMBER() OVER (PARTITION BY se.sport_event_id ORDER BY s.student_id) = 3 THEN '3rd Place'
@@ -344,17 +364,23 @@ BEGIN TRY
             AND h.activity_date = se.event_date
       );
 
-    -- -------------------------------------------------------------------------
-    -- 4. INSERT from candidates into the actual sports history table
-    -- -------------------------------------------------------------------------
+    -- Ensure participation_status column exists
+    IF COL_LENGTH(N'sports_schema.student_sport_history', N'participation_status') IS NULL
+    BEGIN
+        ALTER TABLE sports_schema.student_sport_history
+            ADD participation_status VARCHAR(50) NOT NULL CONSTRAINT DF_student_sport_history_status DEFAULT ('REGISTERED');
+    END;
+
     INSERT INTO sports_schema.student_sport_history
         (student_id, school_id, branch_id, class_id, section_id,
          sport_name, announcement_id, activity_date, activity_name,
-         result, created_by, updated_at, updated_by, sport_category)
+         result, participation_status, created_by, updated_at, updated_by, sport_category)
     SELECT
         c.student_id, c.school_id, c.branch_id, c.class_id, c.section_id,
         c.sport_name, c.announcement_id, c.activity_date, c.activity_name,
-        c.result, c.created_by, SYSUTCDATETIME(), c.created_by, c.sport_category
+        CASE WHEN c.activity_date > CAST(GETUTCDATE() AS DATE) THEN NULL ELSE c.result END,
+        CASE WHEN c.activity_date > CAST(GETUTCDATE() AS DATE) THEN 'REGISTERED' ELSE 'PARTICIPATED' END,
+        c.created_by, SYSUTCDATETIME(), c.created_by, c.sport_category
     FROM #SeedCandidates c
     WHERE NOT EXISTS (
         SELECT 1 FROM sports_schema.student_sport_history h

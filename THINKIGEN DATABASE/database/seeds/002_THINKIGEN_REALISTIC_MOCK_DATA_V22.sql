@@ -2353,6 +2353,22 @@ BEGIN TRY
        Includes completed Mid Term Assessment (Aug 2026) and upcoming
        Periodic Assessment 2 (starting Oct 8, 2026) for School 1, Branch 1.
        ============================================================ */
+    /* Re-verify @TimetableMonday for Section 9 periods grid */
+    SET @TimetableMonday = CAST(
+        DATEADD(DAY,
+            CASE DATEPART(WEEKDAY, GETDATE())
+                WHEN 1 THEN -6  -- Sunday  -> prev Monday
+                WHEN 2 THEN  0  -- Monday  -> today
+                WHEN 3 THEN -1  -- Tuesday -> yesterday
+                WHEN 4 THEN -2
+                WHEN 5 THEN -3
+                WHEN 6 THEN -4
+                WHEN 7 THEN -5  -- Saturday -> prev Monday
+            END,
+            CAST(GETDATE() AS DATE)
+        ) AS DATE
+    );
+
     SET IDENTITY_INSERT management_schema.exam ON;
     -- 5A. Completed Mid Term Assessment 2026 (All 40 Sections)
     INSERT INTO management_schema.exam
@@ -2370,7 +2386,7 @@ BEGIN TRY
       '2026-08-10',
       '2026-08-16',
       N'COMPLETED',
-      1,
+      0,
       1
     FROM management_schema.section sec;
 
@@ -2412,7 +2428,7 @@ BEGIN TRY
       100,
       40,
       N'COMPLETED',
-      1,
+      0,
       1
     FROM management_schema.exam e
     CROSS JOIN management_schema.subject s
@@ -2511,7 +2527,7 @@ BEGIN TRY
         WHEN 0 THEN N'SLIP_TEST'
         WHEN 1 THEN N'QUIZ'
         ELSE N'PROJECT_WORK' END,
-      '2026-08-24',
+      DATEADD(DAY, 3, @TimetableMonday),  -- Thursday of Week 1 (Guaranteed active timetable date)
       CASE (sec.section_id + s.subject_id) % 3 WHEN 2 THEN 50.00 ELSE 25.00 END,
       1,1
     FROM management_schema.section sec
@@ -2537,13 +2553,14 @@ BEGIN TRY
            ELSE N'B' END,
       CASE WHEN (st.student_id + a.assessment_id) % 19 = 0 THEN N'Absent for assessment'
            ELSE N'Demonstrated good grasp of concepts' END,
-      CASE WHEN (st.student_id + a.assessment_id) % 19 = 0 THEN NULL ELSE '2026-08-28T09:00:00' END,
+      CASE WHEN (st.student_id + a.assessment_id) % 19 = 0 THEN NULL ELSE DATEADD(HOUR, 14, CAST(DATEADD(DAY, 1, a.assessment_date) AS DATETIME2)) END,
       CASE WHEN (st.student_id + a.assessment_id) % 19 = 0 THEN NULL ELSE t.user_id END,
       1,1
     FROM teachers_schema.assessment a
     JOIN teachers_schema.teacher t ON t.teacher_id = a.teacher_id
     JOIN student_schema.student st
-      ON st.section_id = a.section_id AND st.student_status = N'ACTIVE';
+      ON st.section_id = a.section_id AND st.student_status = N'ACTIVE'
+    WHERE a.assessment_date <= DATEADD(DAY, -1, CAST(GETUTCDATE() AS DATE));
     SET IDENTITY_INSERT student_schema.assessment_result OFF;
 
     /* ============================================================
@@ -2646,22 +2663,22 @@ BEGIN TRY
       (announcement_id,school_id,branch_id,academic_year_id,announcement_type,sub_category,title,description,
        target_audience,registration_url,start_date,end_date,publish_at,status,is_active,created_by)
     VALUES
-      (1,1,1,1,N'EVENT',N'CULTURAL',N'Independence Day Grand Assembly',N'Flag hoisting ceremony, cultural choir performances, and speech competitions at Central Campus.', N'ALL', N'https://events.schoolname.edu/independence-day-2026', '2026-08-15','2026-08-15','2026-08-10T09:00:00',N'PUBLISHED',1,1),
-      (2,1,1,1,N'NOTICE',N'STUDENT_INSTRUCTIONS',N'Term-1 Parent Teacher Conference Schedule',N'Parent-Teacher meetings for Classes 1 through 10. Time slots published on parent portal.', N'PARENTS', NULL, '2026-09-05','2026-09-05','2026-08-25T09:00:00',N'PUBLISHED',1,1),
-      (3,1,2,1,N'EVENT',N'CULTURAL',N'Inter-School Science & Innovation Expo',N'Annual Science & Technology exhibition at North Campus with robotics and environmental displays.', N'STUDENTS', N'https://events.schoolname.edu/science-expo-2026', '2026-09-12','2026-09-12','2026-08-28T09:00:00',N'PUBLISHED',1,1),
-      (4,1,2,1,N'ACADEMIC',N'EXAMS',N'Mid-Term Assessment Instructions & Code of Conduct',N'Mandatory examination instructions, seating guidelines, and permitted stationary list.', N'STUDENTS', NULL, '2026-09-01','2026-09-10','2026-08-29T09:00:00',N'PUBLISHED',1,1),
-      (5,1,1,1,N'EVENT',N'ALUMNI_EVENTS',N'Alumni Career Mentorship: Tech & Engineering Horizons',N'Distinguished alumni from Google, Microsoft, and ISRO host specialized career guidance sessions.', N'ALL', N'https://events.schoolname.edu/alumni-mentorship', '2026-10-15','2026-10-15','2026-10-01T09:00:00',N'PUBLISHED',1,1),
-      (6,1,1,1,N'ACADEMIC',N'TIMETABLE',N'Master Academic Timetable for All Classes Published',N'Weekly academic timetable with laboratory and sports allocations now accessible in school app.', N'ALL', NULL, '2026-08-10','2026-08-10','2026-08-01T09:00:00',N'PUBLISHED',1,1),
-      (7,1,2,1,N'ACADEMIC',N'SYLLABUS',N'Curriculum Syllabus & Project Evaluation Guidelines',N'Subject syllabi and practical rubrics for the upcoming academic cycle across Classes 1-10.', N'STUDENTS', NULL, '2026-08-12','2026-08-12','2026-08-05T09:00:00',N'PUBLISHED',1,1),
+      (1,1,1,1,N'EVENT',N'CULTURAL',N'Independence Day Grand Assembly',N'Flag hoisting ceremony, cultural choir performances, and speech competitions at Central Campus.', N'ALL', N'https://events.schoolname.edu/independence-day-2026', '2026-08-15','2026-08-15','2026-08-10T09:00:00',N'ARCHIVED',1,1),
+      (2,1,1,1,N'NOTICE',N'STUDENT_INSTRUCTIONS',N'Term-1 Parent Teacher Conference Schedule',N'Parent-Teacher meetings for Classes 1 through 10. Time slots published on parent portal.', N'PARENTS', NULL, '2026-09-05','2026-09-05','2026-08-25T09:00:00',N'ARCHIVED',1,1),
+      (3,1,2,1,N'EVENT',N'CULTURAL',N'Inter-School Science & Innovation Expo',N'Annual Science & Technology exhibition at North Campus with robotics and environmental displays.', N'STUDENTS', N'https://events.schoolname.edu/science-expo-2026', '2026-09-12','2026-09-12','2026-08-28T09:00:00',N'ARCHIVED',1,1),
+      (4,1,2,1,N'ACADEMIC',N'EXAMS',N'Mid-Term Assessment Instructions & Code of Conduct',N'Mandatory examination instructions, seating guidelines, and permitted stationary list.', N'STUDENTS', NULL, '2026-09-01','2026-09-10','2026-08-29T09:00:00',N'ARCHIVED',1,1),
+      (5,1,1,1,N'EVENT',N'ALUMNI_EVENTS',N'Alumni Career Mentorship: Tech & Engineering Horizons',N'Distinguished alumni from Google, Microsoft, and ISRO host specialized career guidance sessions.', N'ALL', N'https://events.schoolname.edu/alumni-mentorship', '2026-10-15','2026-10-15','2026-10-01T09:00:00',N'ARCHIVED',1,1),
+      (6,1,1,1,N'ACADEMIC',N'TIMETABLE',N'Master Academic Timetable for All Classes Published',N'Weekly academic timetable with laboratory and sports allocations now accessible in school app.', N'ALL', NULL, '2026-08-10','2026-08-10','2026-08-01T09:00:00',N'ARCHIVED',1,1),
+      (7,1,2,1,N'ACADEMIC',N'SYLLABUS',N'Curriculum Syllabus & Project Evaluation Guidelines',N'Subject syllabi and practical rubrics for the upcoming academic cycle across Classes 1-10.', N'STUDENTS', NULL, '2026-08-12','2026-08-12','2026-08-05T09:00:00',N'ARCHIVED',1,1),
       (8,1,2,1,N'EVENT',N'SPORTS',N'Annual Inter-Branch Athletics Championship',N'Track events, football, basketball, and yoga championships between Central and North campuses.', N'ALL', N'https://events.schoolname.edu/sports-championship-2026', '2026-11-05','2026-11-07','2026-10-20T09:00:00',N'PUBLISHED',1,1),
-      (9,1,1,1,N'EVENT',N'SPORTS',N'Annual Inter-School Athletics Championship 2026',N'Track and field events including 100m sprint, relay, long jump, shot put, and hurdles.', N'ALL', N'https://events.schoolname.edu/athletics-2026', '2026-08-15','2026-08-16','2026-08-01T09:00:00',N'PUBLISHED',1,1),
-      (10,1,1,1,N'EVENT',N'SPORTS',N'Intra-School Cricket Tournament 2026',N'Branch vs Branch cricket championship. Open to Class 6 to Class 10 students.', N'ALL', N'https://events.schoolname.edu/cricket-2026', '2026-09-05','2026-09-07','2026-08-20T09:00:00',N'PUBLISHED',1,1),
-      (11,1,2,1,N'EVENT',N'SPORTS',N'Kabaddi & Kho-Kho District Trials 2026',N'Selection trials for district-level Kabaddi and Kho-Kho competitions.', N'STUDENTS', NULL, '2026-09-20','2026-09-20','2026-09-05T09:00:00',N'PUBLISHED',1,1),
-      (12,1,2,1,N'EVENT',N'SPORTS',N'Basketball & Volleyball Friendly Series 2026',N'Friendly inter-section Basketball and Volleyball matches across both branches.', N'STUDENTS', NULL, '2026-10-10','2026-10-11','2026-09-25T09:00:00',N'PUBLISHED',1,1),
-      (13,1,1,1,N'EVENT',N'CULTURAL',N'Annual Classical & Folk Dance Showcase',N'Celebrating classical and folk dances of India with solo and group choreographies.', N'ALL', N'https://events.schoolname.edu/dance-showcase', '2026-08-22','2026-08-22','2026-08-05T09:00:00',N'PUBLISHED',1,1),
-      (14,1,1,1,N'EVENT',N'CULTURAL',N'Inter-House Music Competition & Choir Gala',N'Vocal and instrumental musical presentations across Western and Indian Classical traditions.', N'ALL', N'https://events.schoolname.edu/music-gala', '2026-08-29','2026-08-29','2026-08-12T09:00:00',N'PUBLISHED',1,1),
-      (15,1,2,1,N'EVENT',N'CULTURAL',N'Fine Arts, Painting & Sculpture Exhibition',N'Original canvases, watercolor studies, clay sculptures, and digital art portfolios.', N'ALL', N'https://events.schoolname.edu/fine-arts-expo', '2026-09-19','2026-09-19','2026-09-01T09:00:00',N'PUBLISHED',1,1),
-      (16,1,2,1,N'EVENT',N'CULTURAL',N'Annual Shakespeare & Modern Theatre Festival',N'Dramatic monologues, one-act adaptations, and stagecraft showcases.', N'ALL', N'https://events.schoolname.edu/theatre-fest', '2026-10-03','2026-10-03','2026-09-15T09:00:00',N'PUBLISHED',1,1);
+      (9,1,1,1,N'EVENT',N'SPORTS',N'Annual Inter-School Athletics Championship 2026',N'Track and field events including 100m sprint, relay, long jump, shot put, and hurdles.', N'ALL', N'https://events.schoolname.edu/athletics-2026', '2026-08-15','2026-08-16','2026-08-01T09:00:00',N'ARCHIVED',1,1),
+      (10,1,1,1,N'EVENT',N'SPORTS',N'Intra-School Cricket Tournament 2026',N'Branch vs Branch cricket championship. Open to Class 6 to Class 10 students.', N'ALL', N'https://events.schoolname.edu/cricket-2026', '2026-09-05','2026-09-07','2026-08-20T09:00:00',N'ARCHIVED',1,1),
+      (11,1,2,1,N'EVENT',N'SPORTS',N'Kabaddi & Kho-Kho District Trials 2026',N'Selection trials for district-level Kabaddi and Kho-Kho competitions.', N'STUDENTS', NULL, '2026-09-20','2026-09-20','2026-09-05T09:00:00',N'ARCHIVED',1,1),
+      (12,1,2,1,N'EVENT',N'SPORTS',N'Basketball & Volleyball Friendly Series 2026',N'Friendly inter-section Basketball and Volleyball matches across both branches.', N'STUDENTS', NULL, '2026-10-10','2026-10-11','2026-09-25T09:00:00',N'ARCHIVED',1,1),
+      (13,1,1,1,N'EVENT',N'CULTURAL',N'Annual Classical & Folk Dance Showcase',N'Celebrating classical and folk dances of India with solo and group choreographies.', N'ALL', N'https://events.schoolname.edu/dance-showcase', '2026-08-22','2026-08-22','2026-08-05T09:00:00',N'ARCHIVED',1,1),
+      (14,1,1,1,N'EVENT',N'CULTURAL',N'Inter-House Music Competition & Choir Gala',N'Vocal and instrumental musical presentations across Western and Indian Classical traditions.', N'ALL', N'https://events.schoolname.edu/music-gala', '2026-08-29','2026-08-29','2026-08-12T09:00:00',N'ARCHIVED',1,1),
+      (15,1,2,1,N'EVENT',N'CULTURAL',N'Fine Arts, Painting & Sculpture Exhibition',N'Original canvases, watercolor studies, clay sculptures, and digital art portfolios.', N'ALL', N'https://events.schoolname.edu/fine-arts-expo', '2026-09-19','2026-09-19','2026-09-01T09:00:00',N'ARCHIVED',1,1),
+      (16,1,2,1,N'EVENT',N'CULTURAL',N'Annual Shakespeare & Modern Theatre Festival',N'Dramatic monologues, one-act adaptations, and stagecraft showcases.', N'ALL', N'https://events.schoolname.edu/theatre-fest', '2026-10-03','2026-10-03','2026-09-15T09:00:00',N'ARCHIVED',1,1);
     SET IDENTITY_INSERT management_schema.announcement OFF;
 
     /* ============================================================
@@ -2982,7 +2999,7 @@ BEGIN TRY
         THEN DATEADD(HOUR, 18, CAST(DATEADD(DAY, 2, tp.period_date) AS DATETIME2(0)))
         ELSE DATEADD(HOUR, 18, CAST(DATEADD(DAY, 1, tp.period_date) AS DATETIME2(0)))
       END,
-      N'PUBLISHED',
+      CASE WHEN tp.period_date < CAST(GETUTCDATE() AS DATE) THEN N'CLOSED' ELSE N'PUBLISHED' END,
       CASE tp.subject_id WHEN 2 THEN 45 WHEN 3 THEN 40 WHEN 5 THEN 35 ELSE 30 END,
       DATEADD(HOUR, 15, CAST(tp.period_date AS DATETIME2(0))),
       1,
@@ -3076,8 +3093,16 @@ BEGIN TRY
       h.assigned_at,
       h.created_by
     FROM teachers_schema.homework h
-    JOIN student_schema.student st 
-      ON st.section_id = h.section_id AND st.student_status = N'ACTIVE';
+    JOIN student_schema.student st
+      ON st.school_id = h.school_id
+     AND st.branch_id = h.branch_id
+     AND st.class_id = h.class_id
+     AND st.section_id = h.section_id
+     AND st.student_status = N'ACTIVE'
+    WHERE h.branch_id = 1
+      AND h.class_id = 1
+      AND h.section_id = 1
+      AND CAST(h.assigned_at AS DATE) <= DATEADD(DAY, -1, CAST(GETUTCDATE() AS DATE));
     SET IDENTITY_INSERT student_schema.homework_status OFF;
 
     /* ============================================================
@@ -3117,12 +3142,12 @@ BEGIN TRY
       st.student_id,1,st.branch_id,1,st.class_id,st.section_id,st.student_id,
       CASE WHEN st.student_id % 2 = 0 THEN N'PERSONAL' ELSE N'SICK' END,
       N'FULL_DAY',1.00,NULL,
-      DATEADD(DAY, (st.student_id % 5) + 1, '2026-09-01'),
-      DATEADD(DAY, (st.student_id % 5) + 1, '2026-09-01'),
+      DATEADD(DAY, (st.student_id % 5) + 1, @TimetableMonday),  -- Tuesday through Saturday of Week 1 (Always an active timetable day)
+      DATEADD(DAY, (st.student_id % 5) + 1, @TimetableMonday),
       CASE WHEN st.student_id % 2 = 0 THEN N'Family wedding ceremony' ELSE N'Fever and physician-advised rest' END,
       CASE WHEN st.student_id % 3 = 0 THEN N'PENDING' ELSE N'APPROVED' END,
-      '2026-08-28T12:00:00',
-      CASE WHEN st.student_id % 3 = 0 THEN NULL ELSE '2026-08-29T10:00:00' END,
+      DATEADD(DAY, -2, CAST(DATEADD(DAY, (st.student_id % 5) + 1, @TimetableMonday) AS DATETIME2)),
+      CASE WHEN st.student_id % 3 = 0 THEN NULL ELSE DATEADD(DAY, -1, CAST(DATEADD(DAY, (st.student_id % 5) + 1, @TimetableMonday) AS DATETIME2)) END,
       CASE WHEN st.student_id % 3 = 0 THEN NULL ELSE class_teacher.user_id END,
       CASE WHEN st.student_id % 3 = 0 THEN NULL ELSE N'Approved by Section Class Teacher' END,
       1,
@@ -3151,10 +3176,10 @@ BEGIN TRY
       (holiday_id,school_id,branch_id,academic_year_id,holiday_type,holiday_name,description,
        start_date,end_date,is_active,created_by)
     VALUES
-      (1,1,1,1,N'FESTIVAL',N'Ganesh Chaturthi',N'School festival holiday.','2026-09-02','2026-09-02',1,1),
-      (2,1,2,1,N'FESTIVAL',N'Ganesh Chaturthi',N'School festival holiday.','2026-09-02','2026-09-02',1,1),
-      (3,1,1,1,N'NATIONAL',N'Gandhi Jayanti',N'National holiday.','2026-10-02','2026-10-02',1,1),
-      (4,1,2,1,N'NATIONAL',N'Gandhi Jayanti',N'National holiday.','2026-10-02','2026-10-02',1,1),
+      (1,1,1,1,N'FESTIVAL',N'Ganesh Chaturthi',N'School festival holiday.','2026-09-02','2026-09-02',0,1),
+      (2,1,2,1,N'FESTIVAL',N'Ganesh Chaturthi',N'School festival holiday.','2026-09-02','2026-09-02',0,1),
+      (3,1,1,1,N'NATIONAL',N'Gandhi Jayanti',N'National holiday.','2026-10-02','2026-10-02',0,1),
+      (4,1,2,1,N'NATIONAL',N'Gandhi Jayanti',N'National holiday.','2026-10-02','2026-10-02',0,1),
       (5,1,1,1,N'FESTIVAL',N'Diwali Festival',N'Deepavali holidays.','2026-11-08','2026-11-10',1,1),
       (6,1,2,1,N'FESTIVAL',N'Diwali Festival',N'Deepavali holidays.','2026-11-08','2026-11-10',1,1);
     SET IDENTITY_INSERT management_schema.holiday OFF;
@@ -3567,14 +3592,14 @@ BEGIN TRY
        trip_date,trip_type,planned_start_time,actual_start_at,planned_destination_time,actual_destination_at,
        delay_minutes,status,is_active,created_by)
     VALUES
-      (1,1,1,1,1,1,N'DRIVER','2026-08-29',N'PICKUP','07:00','2026-08-29T07:03:00','08:10','2026-08-29T08:13:00',3,N'COMPLETED',1,1),
-      (2,1,1,1,2,1,N'DRIVER','2026-08-29',N'DROP',  '15:00','2026-08-29T15:02:00','15:55','2026-08-29T15:58:00',3,N'COMPLETED',1,1),
-      (3,1,1,2,3,2,N'DRIVER','2026-08-29',N'PICKUP','07:00','2026-08-29T07:01:00','08:10','2026-08-29T08:12:00',2,N'COMPLETED',1,1),
-      (4,1,1,2,4,2,N'DRIVER','2026-08-29',N'DROP',  '15:00','2026-08-29T15:04:00','15:55','2026-08-29T15:59:00',4,N'COMPLETED',1,1),
-      (5,1,2,3,5,3,N'DRIVER','2026-08-29',N'PICKUP','07:00','2026-08-29T07:02:00','08:10','2026-08-29T08:11:00',1,N'COMPLETED',1,1),
-      (6,1,2,3,6,3,N'DRIVER','2026-08-29',N'DROP',  '15:00','2026-08-29T15:01:00','15:55','2026-08-29T15:56:00',1,N'COMPLETED',1,1),
-      (7,1,2,4,7,4,N'DRIVER','2026-08-29',N'PICKUP','07:00','2026-08-29T07:05:00','08:10','2026-08-29T08:14:00',4,N'COMPLETED',1,1),
-      (8,1,2,4,8,4,N'DRIVER','2026-08-29',N'DROP',  '15:00','2026-08-29T15:03:00','15:55','2026-08-29T15:57:00',2,N'COMPLETED',1,1);
+      (1,1,1,1,1,1,N'DRIVER',@TimetableMonday,N'PICKUP','07:00',DATEADD(MINUTE, 3, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('07:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),'08:10',DATEADD(MINUTE, 13, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('08:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),3,N'COMPLETED',1,1),
+      (2,1,1,1,2,1,N'DRIVER',@TimetableMonday,N'DROP',  '15:00',DATEADD(MINUTE, 2, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('15:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),'15:55',DATEADD(MINUTE, 3, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('15:55' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),3,N'COMPLETED',1,1),
+      (3,1,1,2,3,2,N'DRIVER',@TimetableMonday,N'PICKUP','07:00',DATEADD(MINUTE, 1, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('07:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),'08:10',DATEADD(MINUTE, 12, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('08:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),2,N'COMPLETED',1,1),
+      (4,1,1,2,4,2,N'DRIVER',@TimetableMonday,N'DROP',  '15:00',DATEADD(MINUTE, 4, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('15:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),'15:55',DATEADD(MINUTE, 4, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('15:55' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),4,N'COMPLETED',1,1),
+      (5,1,2,3,5,3,N'DRIVER',@TimetableMonday,N'PICKUP','07:00',DATEADD(MINUTE, 2, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('07:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),'08:10',DATEADD(MINUTE, 11, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('08:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),1,N'COMPLETED',1,1),
+      (6,1,2,3,6,3,N'DRIVER',@TimetableMonday,N'DROP',  '15:00',DATEADD(MINUTE, 1, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('15:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),'15:55',DATEADD(MINUTE, 1, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('15:55' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),1,N'COMPLETED',1,1),
+      (7,1,2,4,7,4,N'DRIVER',@TimetableMonday,N'PICKUP','07:00',DATEADD(MINUTE, 5, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('07:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),'08:10',DATEADD(MINUTE, 14, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('08:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),4,N'COMPLETED',1,1),
+      (8,1,2,4,8,4,N'DRIVER',@TimetableMonday,N'DROP',  '15:00',DATEADD(MINUTE, 3, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('15:00' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),'15:55',DATEADD(MINUTE, 2, DATEADD(SECOND, DATEDIFF(SECOND, '00:00:00', CAST('15:55' AS TIME)), CAST(@TimetableMonday AS DATETIME2(0)))),2,N'COMPLETED',1,1);
     SET IDENTITY_INSERT transport_schema.trip OFF;
 
     SET IDENTITY_INSERT transport_schema.trip_stop ON;
@@ -4046,9 +4071,9 @@ BEGIN TRY
             srt.rating_score,
             srt.review_text,
             t.user_id AS teacher_user_id,
-            CAST(DATEADD(DAY, -((st.student_id * 3) % 30), '2026-09-15') AS DATE) AS review_date,
+            tp.period_date AS review_date,
             ROW_NUMBER() OVER (
-                PARTITION BY st.student_id, tsa.subject_id, tsa.teacher_id, srt.category_type, CAST(DATEADD(DAY, -((st.student_id * 3) % 30), '2026-09-15') AS DATE)
+                PARTITION BY st.student_id, tsa.subject_id, tsa.teacher_id, srt.category_type, tp.period_date
                 ORDER BY tsa.teacher_subject_assignment_id
             ) AS rn
         FROM student_schema.student st
@@ -4063,6 +4088,10 @@ BEGIN TRY
            AND tsa.section_id = st.section_id
            AND tsa.is_active = 1
         LEFT JOIN teachers_schema.teacher t ON t.teacher_id = tsa.teacher_id
+        INNER JOIN management_schema.timetable_period tp
+            ON tp.timetable_id = st.section_id
+           AND tp.subject_id = sub.subject_id
+           AND tp.period_type = N'CLASS'
         WHERE st.student_status = N'ACTIVE'
     )
     INSERT INTO student_schema.student_personality_development_review
@@ -4134,22 +4163,31 @@ BEGIN TRY
             WHEN scs.event_name LIKE N'%Theatre%' OR scs.event_name LIKE N'%Assembly%' THEN N'PERFORMING_ARTS'
             ELSE N'CULTURAL_ACTIVITIES'
         END,
-        CASE (scs.student_id % 4)
-            WHEN 0 THEN N'PARTICIPANT'
-            WHEN 1 THEN N'VOCALIST'
-            WHEN 2 THEN N'DANCER'
-            ELSE N'ACTOR'
+        CASE
+            WHEN scs.event_name LIKE N'%Dance%' THEN N'DANCER'
+            WHEN scs.event_name LIKE N'%Music%' OR scs.event_name LIKE N'%Choir%' THEN 
+                CASE (scs.student_id % 2) WHEN 0 THEN N'VOCALIST' ELSE N'INSTRUMENTALIST' END
+            WHEN scs.event_name LIKE N'%Arts%' OR scs.event_name LIKE N'%Painting%' THEN N'EXHIBITOR'
+            WHEN scs.event_name LIKE N'%Theatre%' OR scs.event_name LIKE N'%Assembly%' THEN N'ACTOR'
+            ELSE N'ORGANIZER'
         END,
-        CASE (scs.student_id % 5)
-            WHEN 0 THEN N'FIRST_PLACE'
-            WHEN 1 THEN N'SECOND_PLACE'
-            WHEN 2 THEN N'THIRD_PLACE'
-            WHEN 3 THEN N'SPECIAL_MENTION'
+        CASE 
+            WHEN scs.event_date > CAST(GETUTCDATE() AS DATE) THEN NULL
+            ELSE
+                CASE (scs.student_id % 5)
+                    WHEN 0 THEN N'FIRST_PLACE'
+                    WHEN 1 THEN N'SECOND_PLACE'
+                    WHEN 2 THEN N'THIRD_PLACE'
+                    WHEN 3 THEN N'SPECIAL_MENTION'
+                    ELSE N'PARTICIPATED'
+                END
+        END,
+        CASE 
+            WHEN scs.event_date > CAST(GETUTCDATE() AS DATE) THEN N'REGISTERED'
             ELSE N'PARTICIPATED'
         END,
-        N'PARTICIPATED',
         scs.event_date,
-        1,
+        CASE WHEN scs.event_date < CAST(GETUTCDATE() AS DATE) THEN 0 ELSE 1 END,
         SYSUTCDATETIME(),
         SYSUTCDATETIME()
     FROM StudentCulturalSelection scs
@@ -4163,21 +4201,32 @@ BEGIN TRY
             announcement_id,
             title,
             start_date,
-            ROW_NUMBER() OVER (ORDER BY announcement_id) AS sp_rn
+            CASE
+                WHEN title LIKE N'%Track%' OR title LIKE N'%Athletic%' THEN 'Athletics'
+                WHEN title LIKE N'%Cricket%' THEN 'Cricket'
+                WHEN title LIKE N'%Kabaddi%' THEN 'Kabaddi'
+                WHEN title LIKE N'%Kho%' THEN 'Kho-Kho'
+                WHEN title LIKE N'%Basketball%' THEN 'Basketball'
+                WHEN title LIKE N'%Volleyball%' THEN 'Volleyball'
+                WHEN title LIKE N'%Football%' THEN 'Football'
+                WHEN title LIKE N'%Badminton%' THEN 'Badminton'
+                WHEN title LIKE N'%Table Tennis%' THEN 'Table Tennis'
+                WHEN title LIKE N'%Chess%' THEN 'Chess'
+                WHEN title LIKE N'%Swim%' THEN 'Swimming'
+                WHEN title LIKE N'%Handball%' THEN 'Handball'
+                ELSE 'Athletics'
+            END AS sport_name,
+            CASE
+                WHEN title LIKE N'%Track%' OR title LIKE N'%Athletic%' THEN 'TRACK_AND_FIELD'
+                WHEN title LIKE N'%Cricket%' OR title LIKE N'%Football%' OR title LIKE N'%Basketball%' OR title LIKE N'%Volleyball%' OR title LIKE N'%Kabaddi%' OR title LIKE N'%Kho%' THEN 'TEAM'
+                WHEN title LIKE N'%Chess%' OR title LIKE N'%Badminton%' OR title LIKE N'%Table Tennis%' THEN 'INDOOR'
+                WHEN title LIKE N'%Swim%' THEN 'INDIVIDUAL'
+                ELSE 'OUTDOOR'
+            END AS sport_category,
+            ROW_NUMBER() OVER (ORDER BY announcement_id) AS sp_rn,
+            COUNT(*) OVER () AS total_sp_ann
         FROM management_schema.announcement
         WHERE sub_category = N'SPORTS'
-    ),
-    SportEventsCatalog AS (
-        SELECT * FROM (VALUES
-            (1, 'Athletics',   'TRACK_AND_FIELD', '100m Sprint Championship', '2026-08-15'),
-            (2, 'Athletics',   'TRACK_AND_FIELD', 'Long Jump Championship',    '2026-08-15'),
-            (3, 'Cricket',     'TEAM',            'Intra-School Cricket Match','2026-09-05'),
-            (4, 'Kabaddi',     'TEAM',            'District Selection Trials', '2026-09-20'),
-            (5, 'Basketball',  'TEAM',            'Inter-Section Friendly Match','2026-10-10'),
-            (6, 'Badminton',   'INDIVIDUAL',      'Badminton Championship',    '2026-07-20'),
-            (7, 'Chess',       'INDOOR',          'Inter-Class Chess Tourney', '2026-08-05'),
-            (8, 'Swimming',    'INDIVIDUAL',      'Annual Swimming Gala',      '2026-08-10')
-        ) AS v(event_catalog_id, sport_name, sport_category, activity_name, event_date)
     ),
     SportCandidates AS (
         SELECT
@@ -4186,38 +4235,45 @@ BEGIN TRY
             st.branch_id,
             st.class_id,
             st.section_id,
-            sec.sport_name,
-            sec.sport_category,
-            sec.activity_name,
-            CAST(sec.event_date AS DATE) AS activity_date,
+            sa.sport_name,
+            sa.sport_category,
+            sa.title AS activity_name,
+            CAST(sa.start_date AS DATE) AS activity_date,
             sa.announcement_id,
-            CASE (st.student_id % 4)
-                WHEN 0 THEN '1st Place'
-                WHEN 1 THEN '2nd Place'
-                WHEN 2 THEN 'Winner'
-                ELSE 'Participated'
+            CASE
+                WHEN CAST(sa.start_date AS DATE) > CAST(GETUTCDATE() AS DATE) THEN 'REGISTERED'
+                ELSE 'PARTICIPATED'
+            END AS participation_status,
+            CASE
+                WHEN CAST(sa.start_date AS DATE) > CAST(GETUTCDATE() AS DATE) THEN NULL
+                ELSE
+                    CASE (st.student_id % 4)
+                        WHEN 0 THEN '1st Place'
+                        WHEN 1 THEN '2nd Place'
+                        WHEN 2 THEN 'Winner'
+                        ELSE 'Completed'
+                    END
             END AS result,
             ROW_NUMBER() OVER (
-                PARTITION BY st.student_id, sec.sport_name, CAST(sec.event_date AS DATE)
+                PARTITION BY st.student_id, sa.sport_name, CAST(sa.start_date AS DATE)
                 ORDER BY st.student_id
             ) AS rn
         FROM student_schema.student st
-        CROSS JOIN SportEventsCatalog sec
-        LEFT JOIN SportsAnnouncements sa ON sa.sp_rn = ((sec.event_catalog_id % 5) + 1)
+        INNER JOIN SportsAnnouncements sa 
+            ON sa.sp_rn = ((st.student_id % sa.total_sp_ann) + 1)
         WHERE st.student_status = N'ACTIVE'
-          AND ((st.student_id % 8) + 1) = sec.event_catalog_id
     )
     INSERT INTO sports_schema.student_sport_history
     (
         student_id, school_id, branch_id, class_id, section_id,
         sport_name, announcement_id, activity_date, activity_name,
-        result, created_at, created_by, updated_at, updated_by,
+        result, participation_status, created_at, created_by, updated_at, updated_by,
         sport_category
     )
     SELECT
         sc.student_id, sc.school_id, sc.branch_id, sc.class_id, sc.section_id,
         sc.sport_name, sc.announcement_id, sc.activity_date, sc.activity_name,
-        sc.result, SYSUTCDATETIME(), 1, SYSUTCDATETIME(), 1,
+        sc.result, sc.participation_status, SYSUTCDATETIME(), 1, SYSUTCDATETIME(), 1,
         sc.sport_category
     FROM SportCandidates sc
     WHERE sc.rn = 1;
@@ -4394,6 +4450,7 @@ BEGIN TRY
       SET @ValidationRowCount=0;
       SET @ValidationSql=N'SELECT @RC=COUNT_BIG(*) FROM '+QUOTENAME(@ValidationSchemaName)+N'.'+QUOTENAME(@ValidationTableName)+N';';
       EXEC sys.sp_executesql @ValidationSql,N'@RC BIGINT OUTPUT',@RC=@ValidationRowCount OUTPUT;
+
       IF @ValidationRowCount=0
       BEGIN
         DECLARE @err_empty NVARCHAR(250) = CONCAT(N'Thinkigen table is empty after seeding: ', @ValidationSchemaName, N'.', @ValidationTableName);
@@ -4430,3 +4487,4 @@ BEGIN CATCH
     IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
     THROW;
 END CATCH;
+
