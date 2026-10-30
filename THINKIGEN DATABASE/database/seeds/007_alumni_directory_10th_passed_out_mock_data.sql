@@ -241,7 +241,7 @@ BEGIN TRY
              N'Career Explorer: Pathways in Software Engineering & AI',
              N'Career mentorship session led by distinguished alumni Priya Sharma and Aditya Varma.',
              N'ALL', N'https://events.example.com/register?id=career-explorer-alumni',
-             '2026-10-15', '2026-10-15', '2026-10-01T09:00:00', N'PUBLISHED', 1, @AdminUserId),
+             '2026-10-15', '2026-10-15', '2026-10-01T09:00:00', N'ARCHIVED', 1, @AdminUserId),
 
             (1, 1, 1, N'EVENT', N'ALUMNI_EVENTS',
              N'Class 10 Batch 2021 & 2022 5-Year Reunion & Networking Evening',

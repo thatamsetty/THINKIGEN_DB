@@ -146,5 +146,28 @@ Dedicated mock seed dataset for the Sports History module:
 - **Dynamic FK Resolution**: Resolves `school_id`, `branch_id`, `class_id`, `section_id`, `created_by` from live data — no hard-coded IDs.
 - **Idempotent**: `NOT EXISTS` guard on `(student_id, sport_name, activity_date)` prevents duplicate rows on re-runs.
 
+## 018_THINKIGEN_ADDITIONAL_MOCK_DATA.sql
+
+Dedicated comprehensive mock seed dataset synchronized with the 66 instructional school dates (Monday through Saturday, skipping Sundays, spanning 2026-10-05 to 2026-12-19) from `management_schema.timetable_period` (`timetable_id = 1`):
+- **Subject-Wise Student Attendance**: Exactly 20 attendance records for each `subject_id IN (1, 2, 3, 4, 5, 6)` exclusively for `student_id = 1` and `student_id = 2` (Class 1, Section A), sourced directly from `management_schema.timetable_period`.
+- **Subject-Wise Assessments & Marks**: Rich assessments (`SLIP_TEST`, `QUIZ`, `PROJECT_WORK`, `OTHER`) across subjects 1..6 scheduled on timetable Thursdays, complete with evaluated marks, grades, and remarks for completed tests.
+- **Homework Assignments & Submission Status**: Varied homework, reading, and assignment tasks with realistic deadlines and distribution (`ON_TIME`, `LATE`, `NOT_SUBMITTED`).
+- **Exams, Upcoming Exams & Exam Schedules**: 1 completed exam (`Term-1 Formative Evaluation Examination 2026`, Oct 12–17) with student performance results, and 2 upcoming exams (`Term-2 Periodic Assessment 3 - 2026`, Nov 23–28; `Pre-Board & Term-2 Model Examination 2026`, Dec 14–19) with full Monday–Saturday subject schedules.
+- **Categorized Announcements (30+ Rows)**: High-quality announcements across `ACADEMIC` (`EXAMS`, `SYLLABUS`, `TIMETABLE`), `NOTICE` (`STUDENT_INSTRUCTIONS`, `OTHER`), and `EVENT` (`SPORTS`, `CULTURAL`, `ALUMNI_EVENTS`) with start/end dates strictly matching the timetable.
+- **Student Grievances & Grievance History**: Realistic complaints across academic, transport, hostel, facilities, and fees with incident dates on timetable days and 1:1 lifecycle tracking timestamps.
+- **Student Leave Management & Status History**: Multi-category leave applications (`SICK`, `PERSONAL`, `EDUCATIONAL`, `HEALTH`) adhering to `start_date > CAST(applied_at AS DATE)` with approval audit and status history.
+- **Connect Meetings (MongoDB)**: Companion script `database/mongo/scripts/insert_class1_2_meetings_mock_data.js` updated to synchronize all 10 meeting dates with the timetable days (Oct 6, Oct 9, Oct 14, Oct 20, Oct 23, Oct 28, Nov 4, Nov 18, Dec 2, Dec 16).
+- **Idempotency & Integrity**: Guaranteed safe re-execution with atomic transactions and `NOT EXISTS` guards.
+
+## 019_THINKIGEN_STUDENTS_1_TO_4_ADDITIONAL_MODULES_MOCK_DATA.sql
+
+Dedicated mock seed dataset linked to announcement-related mock data for Central Campus (`school_id = 1, branch_id = 1`) covering all classes (1 to 10) and all sections (1 to 20):
+- **Sports History (`sports_schema.student_sport_history`)**: Linked to official sports announcements (`announcement_type = 'EVENT'`, `sub_category = 'SPORTS'`). Covers `TRACK_AND_FIELD`, `TEAM`, `INDOOR`, `OUTDOOR`, and `INDIVIDUAL` sport categories with realistic placement awards.
+- **Personality Development (`student_schema.student_personality_development`)**: Maintained by designated section class teachers (`teachers_schema.section_class_teacher_assignment`). Holistic evaluations across Leadership, Communication, Collaboration, and Responsibility (0.00–5.00 scale) adhering to `UQ_student_personality_dev_student_year`.
+- **Personality Development Reviews (`student_schema.student_personality_development_review`)**: Qualitative subject teacher reviews across English, Mathematics, Science, Social Science, and Computer Science adhering to `UQ_student_personality_dev_rev_session`.
+- **Cultural Participation (`student_schema.student_cultural_participation`)**: Linked to official cultural announcements (`announcement_type = 'EVENT'`, `sub_category = 'CULTURAL'`). Enforces active uniqueness constraint `UX_student_cultural_part_student_announcement_active` across `PERFORMING_ARTS`, `MUSIC`, `VISUAL_ARTS`, and `CULTURAL_ACTIVITIES`.
+- **Student Exam Performance (`student_schema.student_exam_performance`)**: Aggregated from `student_schema.exam_result` and `teachers_schema.assessment`, with deterministic fallback ensuring 100% of students across all 20 sections possess complete `total_exams_count` and `overall_percentage` metrics.
+- **Idempotency & Scope**: Fully idempotent transaction-wrapped execution using `MERGE` and `NOT EXISTS` guards strictly scoped to Central Campus.
+
 **Production:** Do not run dev/mock seeds. Use a controlled provisioning process and bcrypt/argon2 password hashes only.
 

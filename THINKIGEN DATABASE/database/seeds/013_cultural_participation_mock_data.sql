@@ -265,7 +265,7 @@ BEGIN TRY
             se.start_date,
             se.end_date,
             SYSUTCDATETIME(),
-            N'PUBLISHED',
+            CASE WHEN ISNULL(se.end_date, se.start_date) < CAST(GETUTCDATE() AS DATE) THEN N'ARCHIVED' ELSE N'PUBLISHED' END,
             1,
             SYSUTCDATETIME(),
             @AdminUserId,
@@ -371,31 +371,35 @@ BEGIN TRY
             sec.teacher_id,
             sec.event_category AS category,
 
-            -- Deterministic, realistic role matching the activity category
+            -- Deterministic, realistic role matching the activity category (PARTICIPANT strictly prohibited)
             CASE 
                 WHEN sec.event_category = N'PERFORMING_ARTS' AND sec.event_name LIKE N'%Dance%' THEN N'DANCER'
-                WHEN sec.event_category = N'PERFORMING_ARTS' THEN CASE (sec.student_row_num + sec.slot_id) % 2 WHEN 0 THEN N'ACTOR' ELSE N'PARTICIPANT' END
-                WHEN sec.event_category = N'MUSIC' THEN CASE (sec.student_row_num + sec.slot_id) % 3 WHEN 0 THEN N'VOCALIST' WHEN 1 THEN N'INSTRUMENTALIST' ELSE N'PARTICIPANT' END
-                WHEN sec.event_category = N'VISUAL_ARTS' THEN CASE (sec.student_row_num + sec.slot_id) % 2 WHEN 0 THEN N'EXHIBITOR' ELSE N'PARTICIPANT' END
-                ELSE CASE (sec.student_row_num + sec.slot_id) % 3 WHEN 0 THEN N'ORGANIZER' WHEN 1 THEN N'PARTICIPANT' ELSE N'OTHER' END
+                WHEN sec.event_category = N'PERFORMING_ARTS' THEN N'ACTOR'
+                WHEN sec.event_category = N'MUSIC' THEN CASE (sec.student_row_num + sec.slot_id) % 2 WHEN 0 THEN N'VOCALIST' ELSE N'INSTRUMENTALIST' END
+                WHEN sec.event_category = N'VISUAL_ARTS' THEN N'EXHIBITOR'
+                ELSE N'ORGANIZER'
             END AS role_involvement,
 
             -- Realistic competition results distribution (Winners, Mentions, Participated)
-            CASE (sec.student_row_num * 7 + sec.slot_id * 11) % 15
-                WHEN 0 THEN N'FIRST_PLACE'
-                WHEN 1 THEN N'SECOND_PLACE'
-                WHEN 2 THEN N'THIRD_PLACE'
-                WHEN 3 THEN N'RUNNER_UP'
-                WHEN 4 THEN N'SPECIAL_MENTION'
-                WHEN 5 THEN N'PERFORMED'
-                WHEN 6 THEN N'COMPLETED'
-                WHEN 7 THEN N'NO_RESULT'
-                ELSE N'PARTICIPATED'
+            CASE 
+                WHEN COALESCE(sec.event_date, CAST(SYSUTCDATETIME() AS DATE)) > CAST(GETUTCDATE() AS DATE) THEN NULL
+                ELSE
+                    CASE (sec.student_row_num * 7 + sec.slot_id * 11) % 15
+                        WHEN 0 THEN N'FIRST_PLACE'
+                        WHEN 1 THEN N'SECOND_PLACE'
+                        WHEN 2 THEN N'THIRD_PLACE'
+                        WHEN 3 THEN N'RUNNER_UP'
+                        WHEN 4 THEN N'SPECIAL_MENTION'
+                        WHEN 5 THEN N'PERFORMED'
+                        WHEN 6 THEN N'COMPLETED'
+                        WHEN 7 THEN N'NO_RESULT'
+                        ELSE N'PARTICIPATED'
+                    END
             END AS result,
 
-            -- Participation status distribution (~85% PARTICIPATED, ~15% REGISTERED)
+            -- Participation status distribution (REGISTERED for future events, PARTICIPATED for past)
             CASE 
-                WHEN ((sec.student_row_num + sec.slot_id) % 8 = 0) THEN N'REGISTERED'
+                WHEN COALESCE(sec.event_date, CAST(SYSUTCDATETIME() AS DATE)) > CAST(GETUTCDATE() AS DATE) THEN N'REGISTERED'
                 ELSE N'PARTICIPATED'
             END AS participation_status,
 

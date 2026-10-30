@@ -99,6 +99,7 @@ BEGIN
         activity_date            DATE            NOT NULL,
         activity_name            VARCHAR(200)    NOT NULL,
         result                   VARCHAR(200)    NULL,
+        participation_status     VARCHAR(50)     NOT NULL CONSTRAINT DF_student_sport_history_status DEFAULT ('REGISTERED'),
         created_at               DATETIME2(3)    NOT NULL CONSTRAINT DF_student_sport_history_created_at DEFAULT (SYSUTCDATETIME()),
         created_by               BIGINT          NOT NULL,
         updated_at               DATETIME2(3)    NULL,
@@ -106,6 +107,7 @@ BEGIN
         row_version              ROWVERSION      NOT NULL,
         sport_category           VARCHAR(100)    NOT NULL,
         CONSTRAINT PK_student_sport_history PRIMARY KEY CLUSTERED (student_sport_history_id),
+        CONSTRAINT CK_student_sport_history_status CHECK (participation_status IN ('REGISTERED', 'PARTICIPATED')),
         CONSTRAINT FK_student_sport_history_student FOREIGN KEY (student_id) REFERENCES student_schema.student (student_id),
         CONSTRAINT FK_student_sport_history_school FOREIGN KEY (school_id) REFERENCES management_schema.school (school_id),
         CONSTRAINT FK_student_sport_history_branch FOREIGN KEY (branch_id) REFERENCES management_schema.branch (branch_id),
@@ -114,6 +116,17 @@ BEGIN
         CONSTRAINT FK_student_sport_history_created_by FOREIGN KEY (created_by) REFERENCES security_schema.users (user_id),
         CONSTRAINT FK_student_sport_history_updated_by FOREIGN KEY (updated_by) REFERENCES security_schema.users (user_id)
     );
+END;
+GO
+
+IF COL_LENGTH(N'sports_schema.student_sport_history', N'participation_status') IS NULL
+BEGIN
+    PRINT N'Adding column participation_status to sports_schema.student_sport_history...';
+    ALTER TABLE sports_schema.student_sport_history
+        ADD participation_status VARCHAR(50) NOT NULL CONSTRAINT DF_student_sport_history_status DEFAULT ('REGISTERED');
+    ALTER TABLE sports_schema.student_sport_history
+        ADD CONSTRAINT CK_student_sport_history_status
+        CHECK (participation_status IN ('REGISTERED', 'PARTICIPATED'));
 END;
 GO
 
