@@ -20,16 +20,16 @@ load("database/mongo/collections/023_thinkigen_documents.js");
 
 The script is safe to re-run. It creates only `thinkigen_documents` and four workload indexes. A checksum index is intentionally omitted until duplicate detection is implemented by the application.
 
-## Confirmed mappings
-
-| Module | `owner.entity_type` | `owner.entity_id` |
-|---|---|---|
-| Student | `STUDENT` | `student_id` |
-| Announcement | `ANNOUNCEMENT` | `announcement_id` |
-| Assignment | `ASSIGNMENT` | `assignment_id` |
-| Homework | `HOMEWORK` | `homework_id` |
-| Student Leave | `STUDENT_LEAVE` | `student_leave_id` |
-| Grievance | `GRIEVANCE` | `grievance_id` |
+| Module | `owner.entity_type` | `owner.entity_id` | `classification.category` | `classification.attachment_type` |
+|---|---|---|---|---|
+| Student | `STUDENT` | `student_id` | `STUDENT_DOCUMENT` | `ATTACHMENT`, `CERTIFICATE`, etc. |
+| Announcement | `ANNOUNCEMENT` | `announcement_id` | `ANNOUNCEMENT` | `ATTACHMENT`, `MEDIA`, etc. |
+| Assignment | `ASSIGNMENT` | `assignment_id` | `ASSIGNMENT` | `ATTACHMENT`, `RESOURCE`, etc. |
+| Homework | `HOMEWORK` | `homework_id` | `HOMEWORK` | `ATTACHMENT`, `REFERENCE`, etc. |
+| Student Leave | `LEAVE` | `student_leave_id` | `STUDENT_LEAVE` | `SUPPORTING_DOCUMENT`, `CERTIFICATE` |
+| Student Grievance | `GRIEVANCE` | `grievance_id` | `GRIEVANCE` | `EVIDENCE`, `ATTACHMENT` |
+| Teacher Leave | `TEACHER_LEAVE_APPLICATION` | `teacher_leave_application_id` | `TEACHER_LEAVE` | `SUPPORTING_DOCUMENT` |
+| Teacher Grievance | `TEACHER_GRIEVANCE` | `teacher_grievance_id` | `TEACHER_GRIEVANCE` | `EVIDENCE` |
 
 `classification.category` is module-specific and application-configured. The collection does not impose a universal category list. Confirmed examples include `EVENT`, `ATTACHMENT`, `MEDICAL_CERTIFICATE`, and `EVIDENCE`; unsupported categories remain configurable/TBD.
 

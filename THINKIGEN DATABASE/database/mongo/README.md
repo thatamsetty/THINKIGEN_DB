@@ -55,6 +55,48 @@ Access + refresh tokens: Mongo only — no SQL refresh-token table.
 |------------|---------|
 | `user_jwt_token` | Active ACCESS + REFRESH hashes for one user session |
 
+## Teacher Portal Management & Academic Health
+
+Scoped per faculty and student to deliver high-performance teacher dashboard experiences and proactive student interventions.
+
+| Collection | Purpose |
+|------------|---------|
+| `teacher_daily_progress_checklist` | Teacher daily productivity snapshot: previous day completion metrics, scheduled period checklist items (ATTENDANCE, HOMEWORK_REVIEW, MEETING, RESOURCE_UPLOAD, ASSESSMENT_EVALUATION, CLASSWORK, OTHER), student scopes (ENTIRE_SECTION, GROUP), and atomic item completion. |
+| `student_subject_attentions` | Subject-level academic health and attention alerts: LOW_ASSESSMENT_SCORE, PENDING_HOMEWORK, and ABSENT_ATTENDANCE with assigned teachers, active alert counts, and status lifecycle (ACTIVE, ACKNOWLEDGED, RESOLVED, EXCUSED). |
+
+### Schema Migration & Int32 Upgrade
+To upgrade all IDs in existing documents from `long` to 32-bit `int` (`NumberInt`) and enforce strict schema validators:
+```bash
+mongosh thinkigen database/mongo/scripts/029_update_all_new_collections_to_int.js
+```
+
+### Master All-In-One Execution (Recommended)
+To run schema validation, in-place 32-bit int migration, conflict-free index reconciliation, and complete timetable-aligned mock seeding in one shot:
+```bash
+mongosh Thinkigen database/mongo/scripts/run_all_teacher_mongo_updates.js
+```
+*Or in MongoDB Compass `_mongosh` tab:*
+```javascript
+load("database/mongo/scripts/run_all_teacher_mongo_updates.js")
+```
+
+### Section 1 & 2 Attentions + 5-Day Teacher Checklists Mock Data Seed
+To seed mock data for Section 1 & Section 2 (5 students each) and 5 days of daily checklists for 5 teachers:
+```bash
+mongosh Thinkigen database/mongo/scripts/031_insert_section1_2_and_5day_checklist_mock_data.js
+```
+*Or in MongoDB Compass `_mongosh` tab:*
+```javascript
+load("database/mongo/scripts/031_insert_section1_2_and_5day_checklist_mock_data.js")
+```
+
+### Teacher & Attention Mock Data Seed (Standalone)
+To seed realistic mock data matching SQL Server timetable dates and IDs:
+```bash
+mongosh Thinkigen database/mongo/scripts/028_insert_teacher_daily_progress_and_attentions_mock_data.js
+```
+*Note: Enforces strict temporal constraint—only past instructional dates (October 2026, <= 2026-10-30). Zero future dates.*
+
 ## Shared documents
 
 | Collection | Purpose |
@@ -110,7 +152,7 @@ load("database/mongo/collections/023_thinkigen_documents.js");
 
 Or run each file in `mongosh` against the Organization database.
 
-SQL BIGINT IDs must be inserted as `NumberLong`.
+SQL BIGINT IDs are typically inserted as `NumberLong`, except in teacher portal collections (such as `student_subject_attentions`) where IDs are modeled as `int` (`NumberInt`) for consistency with API entity contracts.
 
 ## Related docs
 

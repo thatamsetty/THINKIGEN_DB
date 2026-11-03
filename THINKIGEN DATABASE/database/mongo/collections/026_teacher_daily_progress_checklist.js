@@ -7,7 +7,7 @@
                    timing (from-to), and task type:
                    - ATTENDANCE (period attendance marking)
                    - HOMEWORK_REVIEW (checking student submissions)
-                   - MEETING (parent/student/department meetings)
+                   - MEETING (parent/student/department meetings - class/section optional)
                    - RESOURCE_UPLOAD (study material / video / notes publishing)
                    - ASSESSMENT_EVALUATION (grading test papers)
                    - CLASSWORK / OTHER
@@ -37,10 +37,10 @@ var validator = {
         additionalProperties: false,
         properties: {
             _id: { bsonType: ["objectId", "string"] },
-            teacher_id: { bsonType: ["int", "long"], minimum: 1 },
-            school_id: { bsonType: ["int", "long"], minimum: 1 },
-            branch_id: { bsonType: ["int", "long"], minimum: 1 },
-            academic_year_id: { bsonType: ["int", "long"], minimum: 1 },
+            teacher_id: { bsonType: "int", minimum: 1 },
+            school_id: { bsonType: "int", minimum: 1 },
+            branch_id: { bsonType: "int", minimum: 1 },
+            academic_year_id: { bsonType: "int", minimum: 1 },
             as_of_date: { bsonType: "date" },
             
             // Previous Day's Progress Tracking
@@ -59,7 +59,7 @@ var validator = {
                     total_tasks: { bsonType: "int", minimum: 0 },
                     completed_tasks: { bsonType: "int", minimum: 0 },
                     completion_percent: {
-                        bsonType: ["int", "double"],
+                        bsonType: ["int", "double", "decimal"],
                         minimum: 0,
                         maximum: 100
                     },
@@ -80,11 +80,6 @@ var validator = {
                         "item_id",
                         "task_title",
                         "task_type",
-                        "class_id",
-                        "class_name",
-                        "section_id",
-                        "section_name",
-                        "room_no",
                         "timing",
                         "priority",
                         "is_completed"
@@ -105,13 +100,14 @@ var validator = {
                                 "OTHER"
                             ]
                         },
-                        class_id: { bsonType: ["int", "long"], minimum: 1 },
-                        class_name: { bsonType: "string", minLength: 1, maxLength: 50 },
-                        section_id: { bsonType: ["int", "long"], minimum: 1 },
-                        section_name: { bsonType: "string", minLength: 1, maxLength: 20 },
-                        subject_id: { bsonType: ["int", "long", "null"] },
+                        // Class and Section are nullable/optional to support MEETINGS, RESOURCE_UPLOADS, and OTHER tasks
+                        class_id: { bsonType: ["int", "null"], minimum: 1 },
+                        class_name: { bsonType: ["string", "null"], maxLength: 50 },
+                        section_id: { bsonType: ["int", "null"], minimum: 1 },
+                        section_name: { bsonType: ["string", "null"], maxLength: 20 },
+                        subject_id: { bsonType: ["int", "null"] },
                         subject_name: { bsonType: ["string", "null"], maxLength: 100 },
-                        room_no: { bsonType: "string", minLength: 1, maxLength: 50 },
+                        room_no: { bsonType: ["string", "null"], maxLength: 50 },
                         timing: {
                             bsonType: "object",
                             required: ["from_time", "to_time"],
@@ -121,6 +117,7 @@ var validator = {
                                 to_time: { bsonType: "string", minLength: 4, maxLength: 15 }
                             }
                         },
+                        // Student scope supports ENTIRE_SECTION, INDIVIDUAL_STUDENT, and GROUP (with group details)
                         student_scope: {
                             bsonType: ["object", "null"],
                             required: ["scope_type"],
@@ -130,8 +127,14 @@ var validator = {
                                     bsonType: "string",
                                     enum: ["ENTIRE_SECTION", "INDIVIDUAL_STUDENT", "GROUP"]
                                 },
-                                student_id: { bsonType: ["int", "long", "null"] },
-                                student_name: { bsonType: ["string", "null"], maxLength: 150 }
+                                student_id: { bsonType: ["int", "null"] },
+                                student_name: { bsonType: ["string", "null"], maxLength: 150 },
+                                group_id: { bsonType: ["int", "string", "null"] },
+                                group_name: { bsonType: ["string", "null"], maxLength: 100 },
+                                student_ids: {
+                                    bsonType: ["array", "null"],
+                                    items: { bsonType: "int" }
+                                }
                             }
                         },
                         priority: {
@@ -140,7 +143,8 @@ var validator = {
                         },
                         is_completed: { bsonType: "bool" },
                         completed_at: { bsonType: ["date", "null"] },
-                        reference_id: { bsonType: ["string", "int", "long", "null"] },
+                        completed_by_user_id: { bsonType: ["int", "null"] },
+                        reference_id: { bsonType: ["string", "int", "null"] },
                         remarks: { bsonType: ["string", "null"], maxLength: 500 }
                     }
                 }
@@ -168,15 +172,68 @@ var validator = {
 // -----------------------------------------------------------------------------
 // Collection Initialization & Schema Enforcement
 // -----------------------------------------------------------------------------
-if (!db.getCollectionNames().includes(COLLECTION_NAME)) {
-    db.createCollection(COLLECTION_NAME, {
+var targetDb = typeof db !== "undefined" ? db.getSiblingDB("thinkigen") : null;
+if (!targetDb) {
+    throw new Error("Unable to resolve target MongoDB database 'thinkigen'.");
+}
+
+if (!targetDb.getCollectionNames().includes(COLLECTION_NAME)) {
+    targetDb.createCollection(COLLECTION_NAME, {
         validator: validator,
         validationLevel: "strict",
         validationAction: "error"
     });
-    print("Created collection: " + COLLECTION_NAME);
+    print("Created collection: " + COLLECTION_NAME + " with strict int schema validation.");
 } else {
-    db.runCommand({
+    // In-place upgrade: Convert any existing document IDs from long to 32-bit int
+    var existingDocsCount = targetDb[COLLECTION_NAME].countDocuments();
+    if (existingDocsCount > 0) {
+        print("[MIGRATION] Found " + existingDocsCount + " existing documents. Upgrading all IDs to 32-bit int (NumberInt)...");
+        var cursor = targetDb[COLLECTION_NAME].find({});
+        while (cursor.hasNext()) {
+            var doc = cursor.next();
+
+            doc.teacher_id = NumberInt(doc.teacher_id);
+            doc.school_id = NumberInt(doc.school_id);
+            doc.branch_id = NumberInt(doc.branch_id);
+            doc.academic_year_id = NumberInt(doc.academic_year_id);
+            doc.is_active = NumberInt(doc.is_active || 1);
+
+            if (doc.previous_day_progress) {
+                doc.previous_day_progress.total_tasks = NumberInt(doc.previous_day_progress.total_tasks);
+                doc.previous_day_progress.completed_tasks = NumberInt(doc.previous_day_progress.completed_tasks);
+            }
+
+            if (Array.isArray(doc.checklist_items)) {
+                doc.checklist_items.forEach(function (item) {
+                    if (item.class_id != null) item.class_id = NumberInt(item.class_id);
+                    if (item.section_id != null) item.section_id = NumberInt(item.section_id);
+                    if (item.subject_id != null) item.subject_id = NumberInt(item.subject_id);
+                    if (item.completed_by_user_id != null) item.completed_by_user_id = NumberInt(item.completed_by_user_id);
+
+                    if (item.student_scope) {
+                        if (item.student_scope.student_id != null) item.student_scope.student_id = NumberInt(item.student_scope.student_id);
+                        if (Array.isArray(item.student_scope.student_ids)) {
+                            item.student_scope.student_ids = item.student_scope.student_ids.map(function (id) {
+                                return NumberInt(id);
+                            });
+                        }
+                    }
+                });
+            }
+
+            if (doc.summary) {
+                doc.summary.total_items = NumberInt(doc.summary.total_items);
+                doc.summary.completed_items = NumberInt(doc.summary.completed_items);
+                doc.summary.pending_items = NumberInt(doc.summary.pending_items);
+            }
+
+            targetDb[COLLECTION_NAME].replaceOne({ _id: doc._id }, doc);
+        }
+        print("[MIGRATION] Completed in-place conversion of all checklist IDs to NumberInt.");
+    }
+
+    targetDb.runCommand({
         collMod: COLLECTION_NAME,
         validator: validator,
         validationLevel: "strict",
@@ -208,10 +265,14 @@ var indexes = [
 ];
 
 indexes.forEach(function (idx) {
-    if (!db[COLLECTION_NAME].getIndexes().some(function (existing) {
-        return existing.name === idx.options.name;
-    })) {
-        db[COLLECTION_NAME].createIndex(idx.key, idx.options);
+    var existing = targetDb[COLLECTION_NAME].getIndexes().find(function (e) {
+        return e.name === idx.options.name;
+    });
+
+    if (!existing) {
+        targetDb[COLLECTION_NAME].createIndex(idx.key, idx.options);
         print("Created index: " + idx.options.name + " on " + COLLECTION_NAME);
+    } else {
+        print("Index " + idx.options.name + " already exists.");
     }
 });

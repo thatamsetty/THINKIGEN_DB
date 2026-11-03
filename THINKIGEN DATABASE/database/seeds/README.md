@@ -169,5 +169,30 @@ Dedicated mock seed dataset linked to announcement-related mock data for Central
 - **Student Exam Performance (`student_schema.student_exam_performance`)**: Aggregated from `student_schema.exam_result` and `teachers_schema.assessment`, with deterministic fallback ensuring 100% of students across all 20 sections possess complete `total_exams_count` and `overall_percentage` metrics.
 - **Idempotency & Scope**: Fully idempotent transaction-wrapped execution using `MERGE` and `NOT EXISTS` guards strictly scoped to Central Campus.
 
+## 020_teacher_leave_and_grievance_mock_data.sql
+
+Dedicated mock seed dataset for Teacher Portal Leave and Grievance Management (`teachers_schema`), deployed via `database/migrations/026_teacher_leave_and_grievance.sql`:
+- **Teacher Leave Allowance (`teachers_schema.teacher_leave_allowance`)**:
+  - Seeds all 80 active teachers across Central Campus (`branch_id = 1`) and North Campus (`branch_id = 2`) for Academic Year 2026-2027 (`academic_year_id = 1`).
+  - Strict rule compliance: Configures exactly **12.0 total days** for every leave type (`sick_total_days = 12.0`, `casual_total_days = 12.0`, `privilege_total_days = 12.0`, `on_duty_total_days = 12.0`, `compensatory_total_days = 12.0`).
+  - Persisted computed columns (`sick_remaining_days`, etc.) automatically evaluate `(total_days - used_days)` with 100% precision.
+- **Teacher Leave Application (`teachers_schema.teacher_leave_application`)**:
+  - Populates 20 realistic teacher leave records across all 5 leave types (`SICK`, `CASUAL`, `PRIVILEGE`, `ON_DUTY`, `COMPENSATORY`).
+  - Sourced directly from October 2026 timetable dates and instructional periods, citing period substitutions and practical lab coverage.
+  - Full constraint compliance: `HALF_DAY` enforces `start_date = end_date` and `total_days = 0.5`; `FULL_DAY` enforces `total_days >= 1.0`.
+  - Zero overlapping leaves per teacher adhering to `IX_teacher_leave_application_active_overlap`.
+- **Teacher Leave Status History (`teachers_schema.teacher_leave_status_history`)**:
+  - Enforces exact **1:1 lifecycle tracking** (exactly 20 rows matching the 20 leave applications).
+  - Captures the latest status transition with prior status in `old_status` and current status in `new_status` (`PENDING -> APPROVED`, `PENDING -> REJECTED`, `APPROVED -> CANCELLED`, or `NULL -> PENDING`).
+  - Audited by verified tenant users (`changed_by` mapped to teacher or campus Principals `user_id = 3` and `user_id = 4`).
+- **Teacher Grievance (`teachers_schema.teacher_grievance`)**:
+  - Populates 12 detailed grievance tickets covering all 6 approved categories (`ACADEMIC_POLICY`, `INFRASTRUCTURE_FACILITIES`, `HARASSMENT_SAFEGUARDING`, `IT_EQUIPMENT`, `ADMINISTRATIVE_PAYROLL`, `HEALTH_SAFETY`).
+  - Incident dates derived from timetable dates; incident locations tied to timetable classrooms (`Room-01`, `Room-21`), laboratories (`Chemistry Laboratory`, `Computer Lab 2`), and school grounds.
+  - Covers all 4 priorities (`LOW`, `MEDIUM`, `HIGH`, `URGENT`) and lifecycle statuses (`RESOLVED`, `CLOSED`, `UNDER_REVIEW`, `OPEN`, `REJECTED`).
+- **Teacher Grievance Status History (`teachers_schema.teacher_grievance_status_history`)**:
+  - Enforces exact **1:1 lifecycle tracking** (exactly 12 rows matching the 12 grievance tickets).
+  - Captures the latest status transition with prior status in `old_status` and current status in `new_status` (`UNDER_REVIEW -> RESOLVED`, `RESOLVED -> CLOSED`, `OPEN -> UNDER_REVIEW`, `UNDER_REVIEW -> REJECTED`, or `NULL -> OPEN`).
+- **Idempotency & Safety**: Fully wrapped in an atomic `BEGIN TRANSACTION` / `BEGIN TRY ... COMMIT` block with automatic rollback on error and preflight validation.
+
 **Production:** Do not run dev/mock seeds. Use a controlled provisioning process and bcrypt/argon2 password hashes only.
 

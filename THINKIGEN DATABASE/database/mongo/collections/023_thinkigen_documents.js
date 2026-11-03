@@ -97,7 +97,8 @@ var validator = {
                         additionalProperties: false,
                         properties: {
                             // EXAMPLES: "STUDENT", "TEACHER", "ANNOUNCEMENT", "ASSIGNMENT", "HOMEWORK",
-                            //           "LEAVE", "GRIEVANCE", "COMMUNICATION", "COMMUNITY_POST"
+                            //           "LEAVE", "GRIEVANCE", "COMMUNICATION", "COMMUNITY_POST",
+                            //           "TEACHER_LEAVE_APPLICATION", "TEACHER_GRIEVANCE"
                             entity_type: {
                                 bsonType: "string",
                                 enum: [
@@ -109,15 +110,17 @@ var validator = {
                                     "LEAVE",
                                     "GRIEVANCE",
                                     "COMMUNICATION",
-                                    "COMMUNITY_POST"
+                                    "COMMUNITY_POST",
+                                    "TEACHER_LEAVE_APPLICATION",
+                                    "TEACHER_GRIEVANCE"
                                 ]
                             },
                             // PURPOSE: Owning business entity identifier | REQUIRED.
-                            // Supports BSON Int32 or an application-generated category-prefixed string.
+                            // Supports BSON Int32, BSON Int64, or an application-generated category-prefixed string.
                             entity_id: {
                                 oneOf: [
                                     {
-                                        bsonType: "int",
+                                        bsonType: ["int", "long"],
                                         minimum: 1
                                     },
                                     {
@@ -154,7 +157,9 @@ var validator = {
                                     "STUDENT_LEAVE",
                                     "GRIEVANCE",
                                     "COMMUNICATION",
-                                    "COMMUNITY"
+                                    "COMMUNITY",
+                                    "TEACHER_LEAVE",
+                                    "TEACHER_GRIEVANCE"
                                 ]
                             },
                             // PURPOSE: Optional module-specific refinement | NULLABLE | EXAMPLE: "CHAT_ATTACHMENT".
@@ -437,7 +442,17 @@ var validator = {
                 { "owner.entity_type": "LEAVE", "classification.category": "STUDENT_LEAVE" },
                 { "owner.entity_type": "GRIEVANCE", "classification.category": "GRIEVANCE" },
                 { "owner.entity_type": "COMMUNICATION", "classification.category": "COMMUNICATION" },
-                { "owner.entity_type": "COMMUNITY_POST", "classification.category": "COMMUNITY" }
+                { "owner.entity_type": "COMMUNITY_POST", "classification.category": "COMMUNITY" },
+                {
+                    "owner.entity_type": "TEACHER_LEAVE_APPLICATION",
+                    "classification.category": "TEACHER_LEAVE",
+                    "classification.attachment_type": "SUPPORTING_DOCUMENT"
+                },
+                {
+                    "owner.entity_type": "TEACHER_GRIEVANCE",
+                    "classification.category": "TEACHER_GRIEVANCE",
+                    "classification.attachment_type": "EVIDENCE"
+                }
             ]
         },
         {
